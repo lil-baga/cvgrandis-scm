@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-100">
+
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md p-6">
+      <div class="flex items-center mb-10">
+        <img src="logo.png" alt="Logo" class="h-12 w-auto mr-2">
+        <!-- <span class="text-xl font-semibold text-gray-800">Admin</span> -->
+      </div>
+      <nav class="space-y-4">
+          <a href="#" class="flex items-center px-4 py-2 bg-yellow-300 rounded-md">
+            <i class="fas fa-clipboard-list mr-3"></i> Pesanan
+          </a>
+          <a href="#" class="flex items-center px-4 py-2 hover:bg-yellow-300 rounded-md">
+            <i class="fas fa-boxes mr-3"></i> Stok
+          </a>
+          <a href="#" class="flex items-center px-4 py-2 hover:bg-yellow-300 rounded-md">
+            <i class="fas fa-users mr-3"></i> Akun
+          </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 overflow-auto">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">Pesanan</h1>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow-md rounded-xl overflow-hidden">
+          <thead class="bg-blue-500 text-white">
+            <tr>
+              <th class="text-left py-3 px-4">Tanggal</th>
+              <th class="text-left py-3 px-4">Nama</th>
+              <th class="text-left py-3 px-4">No HP</th>
+              <th class="text-left py-3 px-4">Project</th>
+              <th class="text-left py-3 px-4">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+            <!-- Dummy data -->
+            <tr class="border-t">
+              <td class="py-3 px-4">2025-05-20</td>
+              <td class="py-3 px-4">Andi Setiawan</td>
+              <td class="py-3 px-4">081234567890</td>
+              <td class="py-3 px-4">Website Toko Online</td>
+              <td class="py-3 px-4 space-x-2">
+                <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Terima</button>
+                <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Tolak</button>
+              </td>
+            </tr>
+            <tr class="border-t">
+              <td class="py-3 px-4">2025-05-18</td>
+              <td class="py-3 px-4">Siti Rahma</td>
+              <td class="py-3 px-4">082233445566</td>
+              <td class="py-3 px-4">Aplikasi Android</td>
+              <td class="py-3 px-4 space-x-2">
+                <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Terima</button>
+                <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Tolak</button>
+              </td>
+            </tr>
+            <!-- Tambahkan baris lainnya sesuai kebutuhan -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

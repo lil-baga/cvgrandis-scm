@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Pemesanan Proyek | CV Grandis Nusantara</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+  <div class="max-w-2xl mx-auto py-10 px-4">
+    <h1 class="text-2xl font-bold text-center mb-6">Form Pemesanan Proyek</h1>
+
+    <form action="#" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="nama">
+          Nama Lengkap
+        </label>
+        <input name="nama" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="text" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+          Email
+        </label>
+        <input name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="email" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="telepon">
+          Nomor Telepon
+        </label>
+        <input name="telepon" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="tel" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="jenis_layanan">
+          Jenis Layanan
+        </label>
+        <select name="jenis_layanan" class="shadow border rounded w-full py-2 px-3 text-gray-700" required>
+          <option value="">-- Pilih Layanan --</option>
+          <option value="neon_box">Neon Box</option>
+          <option value="backdrop">Backdrop Acara</option>
+          <option value="interior">Design Interior</option>
+          <option value="lettering">Letter Akrilik & Stainless</option>
+          <option value="event">Event Organizer & R&D</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="deskripsi">
+          Deskripsi Proyek (ukuran, warna, lokasi, dll)
+        </label>
+        <textarea name="deskripsi" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" rows="4" required></textarea>
+      </div>
+
+      <div class="flex items-center justify-center">
+        <button class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded" type="submit">
+          Kirim Pesanan
+        </button>
+      </div>
+    </form>
+
+    <p class="text-center text-sm text-gray-500">&copy; 2025 CV Grandis Nusantara</p>
+  </div>
+</body>
+</html>

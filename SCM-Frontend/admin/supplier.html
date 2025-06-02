@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Permintaan ke Supplier</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #f0f9ff, #ffffff);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white">
+  <div class="max-w-5xl mx-auto py-10 px-6">
+    <h1 class="text-3xl font-bold text-blue-900 text-center mb-8">📨 Permintaan Pengadaan Bahan</h1>
+
+    <table class="w-full bg-white shadow rounded-lg overflow-hidden text-sm">
+      <thead class="bg-blue-900 text-white text-left">
+        <tr>
+          <th class="p-3">Bahan</th>
+          <th class="p-3">Jumlah Dibutuhkan</th>
+          <th class="p-3">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Contoh baris dummy (hapus nanti, ganti oleh backend) -->
+        <tr class="border-t">
+          <td class="p-3">Akrilik 3mm</td>
+          <td class="p-3">10 m²</td>
+          <td class="p-3">
+            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Menunggu</span>
+          </td>
+        </tr>
+        <tr class="border-t">
+          <td class="p-3">Kabel LED</td>
+          <td class="p-3">50 m</td>
+          <td class="p-3">
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Disetujui</span>
+          </td>
+        </tr>
+        <tr class="border-t">
+          <td class="p-3">Power Supply</td>
+          <td class="p-3">5 Unit</td>
+          <td class="p-3">
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">Ditolak</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

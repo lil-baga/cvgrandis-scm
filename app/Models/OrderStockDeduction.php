@@ -15,7 +15,6 @@ class OrderStockDeduction extends Model
         'quantity_deducted',
     ];
 
-    // Definisikan relasi jika perlu
     public function order()
     {
         return $this->belongsTo(Order::class);

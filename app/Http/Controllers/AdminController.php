@@ -159,11 +159,6 @@ class AdminController extends Controller
                         }
                         $stockItem->save();
 
-                        // CATAT PENGURANGAN STOK KE TABEL order_stock_deductions
-                        // Cek apakah item ini sudah dicatat pengurangannya untuk order ini sebelumnya
-                        // Jika ya, mungkin Anda ingin mengupdate jumlahnya atau membuat record baru (tergantung logika bisnis)
-                        // Untuk contoh ini, kita buat record baru setiap kali ada penyesuaian.
-                        // Atau jika ingin memastikan unik per order per stock, gunakan updateOrCreate.
                         OrderStockDeduction::updateOrCreate(
                             [
                                 'order_id' => $order->id,
@@ -175,12 +170,6 @@ class AdminController extends Controller
                                 'quantity_deducted' => DB::raw("quantity_deducted + {$actualDeducted}")
                             ]
                         );
-                        // Jika Anda ingin setiap penyesuaian adalah record baru (bukan akumulasi):
-                        // OrderStockDeduction::create([
-                        //     'order_id' => $order->id,
-                        //     'stock_id' => $stockItem->id,
-                        //     'quantity_deducted' => $actualDeducted, // Gunakan jumlah yang benar-benar dikurangi
-                        // ]);
 
                         $adjustedItemsCount++;
                         $processedStockIds[] = $stockId;
@@ -226,7 +215,6 @@ class AdminController extends Controller
 
             $downloadFilename = preg_replace('/[^A-Za-z0-9_.-]/', '_', $downloadFilename);
 
-
             return Response::make($order->image_ref, 200, [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => 'inline; filename="' . $downloadFilename . '"'
@@ -268,16 +256,12 @@ class AdminController extends Controller
         return 'application/octet-stream';
     }
 
-    // Di dalam AdminController.php
-
     public function forecast(Request $request)
     {
         $stocks = Stock::orderBy('name')->get();
         $selectedStockId = $request->input('stock_id');
-        // Durasi input dari user (misal 30 hari, 90 hari)
         $forecastDurationInput = (int) $request->input('duration', 30);
-        // Frekuensi data yang akan diagregasi dan diforecast
-        $timeFrequency = $request->input('frequency', 'M'); // Default Bulanan ('M'), bisa 'D', 'W'
+        $timeFrequency = $request->input('frequency', 'D'); // Default Bulanan ('M'), bisa 'D', 'W'
 
         $historicalData = null;
         $forecastData = null;
@@ -290,12 +274,11 @@ class AdminController extends Controller
             $actualForecastSteps = $forecastDurationInput;
         } elseif ($timeFrequency === 'W') {
             $actualForecastSteps = ceil($forecastDurationInput / 7);
-        } else { // Default Bulanan ('M')
+        } else {
             $actualForecastSteps = ceil($forecastDurationInput / 30);
         }
-        // Pastikan minimal 1 step
-        if ($actualForecastSteps < 1) $actualForecastSteps = 1;
 
+        if ($actualForecastSteps < 1) $actualForecastSteps = 1;
 
         if ($selectedStockId) {
             $selectedStock = Stock::find($selectedStockId);

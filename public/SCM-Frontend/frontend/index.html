@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CV Grandis Nusantara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #f0f9ff, #ffffff);
+    }
+    .layanan-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 0.75rem;
+      transition: transform 0.3s ease;
+    }
+    .card:hover .layanan-img {
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body class="text-gray-800 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-blue-800 text-white py-6 text-center shadow-md">
+    <h1 class="text-4xl font-bold tracking-wide">CV Grandis Nusantara</h1>
+    <p class="text-sm mt-1">Advertising • Event Organizer • Interior • R&D</p>
+  </header>
+
+  <!-- Tentang Kami -->
+  <section class="py-12 max-w-4xl mx-auto px-6 text-center">
+    <h2 class="text-3xl font-semibold text-blue-900 mb-4">Tentang Kami</h2>
+    <p class="text-gray-700 text-lg leading-relaxed">
+      Kami adalah penyedia jasa Advertising, Event Organizer, Interior Design, dan Research & Development
+      yang berdiri sejak 13 Oktober 2022 di Jember. Kami berkomitmen pada profesionalisme, efisiensi,
+      dan tanggung jawab.
+    </p>
+  </section>
+
+  <!-- Layanan -->
+  <section class="py-14 px-6 bg-white">
+    <h2 class="text-3xl font-semibold text-center text-blue-900 mb-10">Layanan Kami</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      
+      <!-- Card Template -->
+      <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl transition">
+        <img src="https://i.pinimg.com/736x/f0/e4/79/f0e47953720d08f7e96db915631e9d89.jpg" alt="Advertising" class="layanan-img">
+        <h3 class="font-semibold text-lg mt-4 text-blue-800">Advertising</h3>
+        <p class="text-sm text-gray-600 mt-1">Produksi neon box, banner backlite, dan cutting stiker.</p>
+      </div>
+
+      <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl transition">
+        <img src="https://i.pinimg.com/736x/ab/43/8a/ab438a2f529892176c8a7769efa28c5c.jpg" alt="Event Property" class="layanan-img">
+        <h3 class="font-semibold text-lg mt-4 text-blue-800">Event Property</h3>
+        <p class="text-sm text-gray-600 mt-1">Gate, backdrop, meja, kursi, dan perlengkapan event lainnya.</p>
+      </div>
+
+      <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl transition">
+        <img src="https://i.pinimg.com/736x/41/02/ee/4102eea8b523310cb18aed13608b342f.jpg" alt="Interior" class="layanan-img">
+        <h3 class="font-semibold text-lg mt-4 text-blue-800">Interior Design</h3>
+        <p class="text-sm text-gray-600 mt-1">Desain dan produksi interior dengan HPL dan ACP.</p>
+      </div>
+
+      <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl transition">
+        <img src="https://i.pinimg.com/736x/9f/b5/56/9fb556bd2b8ea1a892076970778760a5.jpg" alt="Letter Akrilik" class="layanan-img">
+        <h3 class="font-semibold text-lg mt-4 text-blue-800">Letter Akrilik</h3>
+        <p class="text-sm text-gray-600 mt-1">Tulisan menyala atau tidak, dari akrilik dan stainless.</p>
+      </div>
+
+      <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl transition">
+        <img src="https://i.pinimg.com/736x/ad/9b/67/ad9b6767729f8ea9bdedacb829b64dda.jpg" alt="Event Organizer" class="layanan-img">
+        <h3 class="font-semibold text-lg mt-4 text-blue-800">Event Organizer & R&D</h3>
+        <p class="text-sm text-gray-600 mt-1">Pelaksanaan event dan penelitian lokal hingga nasional.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="text-center py-12 bg-blue-100">
+    <h2 class="text-2xl font-semibold mb-4 text-blue-900">Siap Memulai Proyek Bersama Kami?</h2>
+    <a href="form-pemesanan.html" class="inline-block bg-blue-800 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-700 transition">
+      Ajukan Pemesanan
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-8 text-center text-sm">
+    <p>CV Grandis Nusantara — Perumahan Puri Bunga Nirwana, Cluster Bintaro N-15, Jember</p>
+    <p class="mt-1">0852 3671 0100 • grandisnusantara@gmail.com</p>
+    <p class="text-xs mt-3">&copy; 2025 CV Grandis Nusantara. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

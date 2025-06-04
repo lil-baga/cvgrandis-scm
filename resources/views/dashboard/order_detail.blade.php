@@ -1,10 +1,9 @@
 @extends('layout.master')
 
-@section('title', 'Detail Order - ' . $order->name)
+@section('title', 'Order Detail - ' . $order->name)
 
 @section('content')
     <div class="pt-10 p-4 sm:ml-0 max-w-3xl mx-auto">
-        {{-- ... (Bagian pesan sukses/error dan detail order atas tetap sama) ... --}}
         @if (session('success'))
             <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Berhasil!</strong>

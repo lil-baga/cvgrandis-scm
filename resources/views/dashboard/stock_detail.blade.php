@@ -1,6 +1,6 @@
 @extends('layout.master')
 
-@section('title', 'Detail Stok - ' . $stock->name)
+@section('title', 'Stock Detail - ' . $stock->name)
 
 @section('content')
     <div class=" pt-36 p-4 sm:ml-0 max-w-3xl mx-auto">
@@ -233,7 +233,7 @@
                 const nameInput = document.getElementById('editDetailName');
                 const typeSelect = document.getElementById('editDetailType');
                 const stockInput = document.getElementById(
-                'editDetailStock'); // Ini akan jadi 'jumlah ditambah' atau 'stok baru'
+                    'editDetailStock'); // Ini akan jadi 'jumlah ditambah' atau 'stok baru'
                 const stockLabel = document.querySelector('label[for="editDetailStock"]'); // Ambil labelnya
                 const lowStockInput = document.getElementById('editDetailLowStock');
                 const currentStockInfo = document.getElementById('currentStockInfo'); // Elemen untuk info stok
@@ -295,7 +295,7 @@
                     stockInput.placeholder = "0";
                     stockInput.min = "0"; // Jumlah yang ditambahkan tidak boleh negatif
                     currentStockForSupplierModal =
-                    currentStockQty; // Simpan stok saat ini untuk validasi di controller jika perlu (atau controller ambil dari DB)
+                        currentStockQty; // Simpan stok saat ini untuk validasi di controller jika perlu (atau controller ambil dari DB)
                     if (currentStockInfo) {
                         currentStockInfo.textContent =
                             `Stok saat ini: ${currentStockQty}. Masukkan jumlah yang ingin ditambahkan.`;
@@ -311,8 +311,6 @@
                 }
             }
 
-            // ... (fungsi prepareStockDeleteModal dan DOMContentLoaded lainnya tetap sama) ...
-            // Pastikan nama route di DOMContentLoaded juga benar jika ada, misal untuk re-open modal
             window.prepareStockDeleteModal = function(id, name) {
                 const form = document.getElementById('deleteStockItemFormDetail');
                 let deleteUrl = "{{ route('stock.destroy', ['stock' => ':id']) }}";
@@ -322,8 +320,6 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 @if (session('open_edit_modal_on_error') && $errors->any() && isset($stock))
-                    // Panggil populate dengan data yang ada untuk menginisialisasi tampilan modal
-                    // sesuai role, lalu old() akan mengisi nilainya jika ada.
                     populateEditStockModal(
                         '{{ $stock->id }}',
                         '{{ addslashes($stock->name) }}', // Gunakan data $stock asli untuk UI awal
@@ -332,20 +328,17 @@
                         {{ $stock->low_stock }}
                     );
 
-                    // Timpa dengan old input jika ada
-                    // Perhatikan bahwa untuk supplier, 'stock' dari old() adalah jumlah yg ditambahkan
                     document.getElementById('editDetailName').value = "{{ old('name', addslashes($stock->name)) }}";
                     document.getElementById('editDetailType').value = "{{ old('type', $stock->type) }}";
                     document.getElementById('editDetailStock').value =
-                        "{{ old('stock_input_value', IS_SUPPLIER ? '' : $stock->stock) }}"; // 'stock_input_value' adalah nama field yang akan disubmit
+                        "{{ old('stock_input_value', IS_SUPPLIER ? '' : $stock->stock) }}";
                     document.getElementById('editDetailLowStock').value = "{{ old('low_stock', $stock->low_stock) }}";
 
                     const editForm = document.getElementById('editStockItemFormDetail');
-                    if (editForm) { // Periksa apakah form ada
+                    if (editForm) {
                         let updateUrlOnError = "{{ route('stock.update', ['stock' => $stock->id]) }}";
                         editForm.action = updateUrlOnError;
                     }
-
 
                     const editModalEl = document.getElementById('editStockItemModalDetail');
                     if (editModalEl) {

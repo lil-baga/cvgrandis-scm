@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers; // Atau App\Http\Controllers\Admin; sesuai struktur Anda
+namespace App\Http\Controllers;
 
 use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth; // PENTING: Import Auth
-use Illuminate\Support\Facades\Log;   // Opsional untuk logging
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class SupplierController extends Controller
@@ -27,7 +27,6 @@ class SupplierController extends Controller
         $lowStockItems = Stock::where('status', 'low_stock')->count();
         $outOfStockItems = Stock::where('status', 'out_of_stock')->count();
 
-        // Pastikan view path sudah benar, misal 'admin.stocks.index' jika mengikuti konvensi sebelumnya
         return view('dashboard.stock', compact('stocks', 'totalItems', 'lowStockItems', 'outOfStockItems', 'user'));
     }
 
@@ -51,7 +50,6 @@ class SupplierController extends Controller
 
         try {
             Stock::create($validatedData);
-            // Pastikan nama route 'dashboard' adalah route ke daftar stok
             return redirect()->route('stock')->with('success', 'Barang stok berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Gagal tambah stok: ' . $e->getMessage());
@@ -61,7 +59,6 @@ class SupplierController extends Controller
 
     public function show(Stock $stock)
     {
-        // Pastikan view path sudah benar, misal 'admin.stocks.show'
         return view('dashboard.stock_detail', compact('stock'));
     }
 
@@ -73,21 +70,19 @@ class SupplierController extends Controller
         }
 
         $rules = [];
-        $dataToUpdate = []; // Data yang akan di-pass ke $stock->update()
+        $dataToUpdate = [];
 
         if ($user->hasRole('Administrator')) {
             $rules = [
                 'name'      => ['required', 'string', 'max:255', Rule::unique('stocks')->ignore($stock->id)],
                 'type'      => ['required', Rule::in(['material', 'electricity', 'tools'])],
-                'stock'     => 'required|integer|min:0', // Untuk Admin, ini adalah total stok baru
+                'stock'     => 'required|integer|min:0',
                 'low_stock' => 'required|integer|min:0',
             ];
             $validatedData = $request->validate($rules);
-            $dataToUpdate = $validatedData; // Admin update semua field yang divalidasi
-
+            $dataToUpdate = $validatedData;
         } elseif ($user->hasRole('Supplier')) {
             $rules = [
-                // Untuk Supplier, input 'stock' dari form adalah 'jumlah yang ditambahkan'
                 'stock' => ['required', 'integer', 'min:0'],
             ];
             $validatedData = $request->validate($rules);
@@ -97,10 +92,7 @@ class SupplierController extends Controller
             $newTotalStock = $stock->stock + $quantityToAdd;
 
             $dataToUpdate['stock'] = $newTotalStock;
-            // Field lain (name, type, low_stock) tidak diubah oleh Supplier dari form ini
-
         } else {
-            // Pastikan nama route 'admin.stocks.show' atau 'dashboard.stock.show' sesuai
             return redirect()->route('stock.show', $stock->id)->with('error', 'Anda tidak memiliki izin untuk melakukan aksi ini.');
         }
 
@@ -125,8 +117,6 @@ class SupplierController extends Controller
         } catch (\Exception $e) {
             Log::error("Gagal update stok #{$stock->id}: " . $e->getMessage());
 
-            // Dapatkan validator instance dari request jika validasi gagal sebelum try-catch
-            // Jika error terjadi di DB, $request->validator mungkin null.
             $validator = Validator::make([], []); // Dummy validator jika $request->validator null
             if (isset($request->validator) && $request->validator->fails()) {
                 $validator = $request->validator;

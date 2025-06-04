@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body { background: linear-gradient(to right, #e0f7fa, #ffffff); }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-7xl mx-auto py-10 px-6">
+    <!-- Filter + Logout -->
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <label class="text-sm font-medium text-gray-700 mr-2">Filter Layanan:</label>
+        <select id="filterLayanan" onchange="filterPesanan()" class="border rounded px-3 py-2 text-sm">
+          <option value="semua">Semua</option>
+          <option value="Neon Box">Neon Box</option>
+          <option value="Backdrop">Backdrop</option>
+          <option value="Interior">Interior</option>
+          <option value="Lettering">Lettering</option>
+          <option value="Event Organizer">Event Organizer</option>
+        </select>
+      </div>
+      <a href="login-admin.html" class="text-sm text-blue-700 hover:underline">🔓 Logout</a>
+    </div>
+
+    <!-- Tabel Pesanan -->
+    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden text-sm">
+      <thead class="bg-blue-900 text-white">
+        <tr>
+          <th class="p-3 text-left">Nama</th>
+          <th class="p-3 text-left">Email</th>
+          <th class="p-3 text-left">Telepon</th>
+          <th class="p-3 text-left">Layanan</th>
+          <th class="p-3 text-left">Jumlah</th>
+          <th class="p-3 text-left">Ukuran</th>
+          <th class="p-3 text-left">Deskripsi</th>
+          <th class="p-3 text-left">Aksi</th>
+        </tr> <tbody>
+  <!-- Contoh baris dummy -->
+  <tr class="border-t">
+    <td class="p-3">Ayu</td>
+    <td class="p-3">ayu@email.com</td>
+    <td class="p-3">08123456789</td>
+    <td class="p-3">Neon Box</td>
+    <td class="p-3">2</td>
+    <td class="p-3">2x1</td>
+    <td class="p-3">Neon box untuk toko roti</td>
+    <td class="p-3">
+      <a href="prediksi.html" class="bg-blue-600 text-white px-4 py-2 rounded text-xs hover:bg-blue-700 transition">
+        Prediksi Bahan
+      </a>
+    </td>
+  </tr>
+</tbody>
+
+      </thead>
+      <tbody>
+  
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function filterPesanan() {
+      const filter = document.getElementById('filterLayanan').value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const layanan = row.children[3]?.textContent.toLowerCase();
+        row.style.display = (filter === 'semua' || layanan.includes(filter)) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

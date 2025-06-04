@@ -1,6 +1,6 @@
 @extends('layout.master')
 
-@section('title', 'Grandis.id - Form Pemesanan')
+@section('title', 'Form Pemesanan')
 @section('content')
     <div class="bg-gray-100 font-sans min-h-screen w-full">
         <div class="max-w-2xl mx-auto py-10 px-4">
@@ -78,8 +78,8 @@
                             </div>
                             {{-- Input file yang sebenarnya, disembunyikan --}}
                             <input id="image_ref_input" name="image_ref" type="file" class="hidden"
-                                accept=".jpg,.jpeg,.png,.pdf,.zip" multiple />
-                            <input id="initial_status" name="status" type="text" class="hidden" value="in_queue" multiple />
+                                accept=".jpg,.jpeg,.png,.pdf,.zip"/>
+                            <input id="initial_status" name="status" type="text" class="hidden" value="in_queue"/>
                         </label>
                     </div>
 

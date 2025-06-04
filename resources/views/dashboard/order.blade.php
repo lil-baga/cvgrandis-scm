@@ -72,7 +72,8 @@
                 <tbody id="ordersTableBody">
                     @forelse ($orders as $order)
                         <tr class="border-b hover:bg-gray-100">
-                            <td class="px-6 py-4 text-center font-medium text-gray-900 whitespace-nowrap">{{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}</td>
+                            <td class="px-6 py-4 text-center font-medium text-gray-900 whitespace-nowrap">
+                                {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}</td>
                             <td class="px-6 py-4 text-center text-gray-900">
                                 {{ $order->orderDate ? $order->orderDate->format('d M Y H:i') : 'N/A' }}
                             </td>

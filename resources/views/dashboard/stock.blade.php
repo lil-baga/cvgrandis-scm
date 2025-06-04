@@ -1,6 +1,6 @@
 @extends('layout.master')
 
-@section('title', 'Admin - Daftar Stok Barang')
+@section('title', 'Stock List')
 
 @section('content')
     <div class="pt-20 p-4 sm:ml-0">

@@ -3,6 +3,7 @@
 @section('title', 'Login')
 
 @section('content')
+
     <body class="bg-gray-100 text-gray-800 font-sans">
         <div class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div class="mb-8 text-center">

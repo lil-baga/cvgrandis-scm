@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Supplier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #f0f9ff, #ffffff);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+    <h1 class="text-3xl font-bold text-blue-900 text-center mb-6">🔐 Login Supplier</h1>
+
+    <form action="dashboard.html" method="GET" class="space-y-5">
+      <input type="text" name="username" placeholder="Username" required class="w-full border rounded-lg px-4 py-3" />
+      <input type="password" name="password" placeholder="Password" required class="w-full border rounded-lg px-4 py-3" />
+      <button type="submit" class="w-full bg-blue-800 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+        Masuk Dashboard
+      </button>
+    </form>
+  </div>
+</body>
+</html>

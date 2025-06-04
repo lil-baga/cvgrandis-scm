@@ -21,7 +21,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // // Rute yang Membutuhkan Autentikasi dan Role Tertentu
 Route::middleware(['auth'])->group(function () {
     
-    // Dashboard (Stok) - Bisa diakses Administrator atau Supplier
     Route::middleware(['role:Administrator,Supplier'])->group(function () {
         Route::get('/dashboard', [SupplierController::class, 'index'])->name('stock');
         Route::get('/dashboard/stock/{stock}', [SupplierController::class, 'show'])->name('stock.show');

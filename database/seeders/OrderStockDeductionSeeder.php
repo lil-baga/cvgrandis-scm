@@ -20,7 +20,7 @@ class OrderStockDeductionSeeder extends Seeder
 
         $minDeductionsPerStock = 30; // UBAH TARGET MINIMAL DEDUKSI PER STOCK_ID DI SINI
 
-        if ($allOrders->isEmpty()) { // Cukup ada 1 order untuk bisa jalan, tapi idealnya lebih banyak
+        if ($allOrders->isEmpty()) {
             $this->command->error('Tidak ada data Order untuk menjalankan OrderStockDeductionSeeder. Jalankan OrderSeeder terlebih dahulu.');
             return;
         }
@@ -37,18 +37,10 @@ class OrderStockDeductionSeeder extends Seeder
         $deductions = [];
 
         foreach ($allStockItems as $stockItem) {
-            // Ambil N order unik secara acak untuk setiap item stok
-            // Jika jumlah order kurang dari N, ambil semua order yang ada
             $numberOfOrdersToSelect = min($minDeductionsPerStock, $allOrders->count());
 
             $selectedOrders = new \Illuminate\Database\Eloquent\Collection(); // Inisialisasi
             if ($numberOfOrdersToSelect > 0) {
-                // Jika ingin benar-benar unik dan tidak peduli jika order yang sama dipakai item stok lain
-                // $selectedOrders = $allOrders->random($numberOfOrdersToSelect);
-
-                // Jika ingin mencoba mendapatkan order yang berbeda untuk setiap iterasi stok (lebih kompleks dan mungkin tidak selalu unik jika stok banyak & order sedikit)
-                // Untuk seeder, random() sudah cukup baik untuk variasi.
-                // Kita akan memastikan kita mengambil sejumlah order yang dibutuhkan.
                 if ($allOrders->count() >= $numberOfOrdersToSelect) {
                     $selectedOrders = $allOrders->random($numberOfOrdersToSelect);
                 } else {
@@ -63,25 +55,24 @@ class OrderStockDeductionSeeder extends Seeder
 
             $deductionsForThisStockCount = 0;
             foreach ($selectedOrders as $order) {
-                // Batasi hingga $minDeductionsPerStock per stok
                 if ($deductionsForThisStockCount >= $minDeductionsPerStock) break;
 
                 $quantityDeducted = 1;
                 switch ($stockItem->type) {
                     case 'material':
-                        $quantityDeducted = rand(2, 8); // Sedikit penyesuaian rentang
+                        $quantityDeducted = rand(2, 8);
                         if (str_contains(strtolower($stockItem->name), 'roll') || str_contains(strtolower($stockItem->name), '(lbr)')) {
                             $quantityDeducted = rand(1, 3);
                         }
                         break;
                     case 'electricity':
-                        $quantityDeducted = rand(10, 40); // Sedikit penyesuaian rentang
+                        $quantityDeducted = rand(10, 40);
                         if (str_contains(strtolower($stockItem->name), 'power supply') || str_contains(strtolower($stockItem->name), '(roll')) {
                             $quantityDeducted = rand(1, 5);
                         }
                         break;
                     case 'tools':
-                        $quantityDeducted = rand(1, 15); // Sedikit penyesuaian rentang
+                        $quantityDeducted = rand(1, 15);
                         if (str_contains(strtolower($stockItem->name), 'set') || str_contains(strtolower($stockItem->name), 'box')) {
                             $quantityDeducted = rand(1, 2);
                         }
@@ -89,12 +80,12 @@ class OrderStockDeductionSeeder extends Seeder
                 }
 
                 $orderCreatedAt = Carbon::parse($order->created_at);
-                $potentialMaxDate = $orderCreatedAt->copy()->addMonths(2); // Deduksi terjadi maks 2 bulan setelah order
+                $potentialMaxDate = $orderCreatedAt->copy()->addMonths(2);
                 $maxDeductionDate = $now->min($potentialMaxDate);
 
                 $deductionDateTime = $faker->dateTimeBetween($orderCreatedAt, $maxDeductionDate);
                 if (Carbon::parse($deductionDateTime)->lessThan($orderCreatedAt)) {
-                    $deductionDateTime = $orderCreatedAt; // Pastikan tidak sebelum order dibuat
+                    $deductionDateTime = $orderCreatedAt;
                 }
 
                 $deductions[] = [
@@ -108,12 +99,8 @@ class OrderStockDeductionSeeder extends Seeder
             }
         }
 
-        // Loop tambahan untuk memastikan total deduksi (jika diperlukan) sudah tidak relevan
-        // karena target per item stok sudah tinggi.
-
-        // Bulk insert untuk performa
         if (!empty($deductions)) {
-            foreach (array_chunk($deductions, 500) as $chunk) { // Ukuran chunk bisa disesuaikan
+            foreach (array_chunk($deductions, 500) as $chunk) {
                 OrderStockDeduction::insert($chunk);
             }
         }

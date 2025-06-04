@@ -1,13 +1,11 @@
 @extends('layout.master')
 
-@section('title', 'Stock Forecast - SARIMA')
+@section('title', 'Stock Forecast')
 
 @section('content')
     <div class="pt-20 p-4 sm:ml-0">
         <div class="bg-white p-6 rounded-lg shadow mb-6">
             <h2 class="text-2xl font-semibold text-gray-800 mb-6">Prediksi Kebutuhan Stok (SARIMA)</h2>
-
-            {{-- Form untuk memilih item, durasi, dan frekuensi --}}
             <form method="GET" action="{{ route('forecast') }}"
                 class="mb-6 space-y-4 md:space-y-0 md:flex md:items-end md:space-x-3">
                 <div>
@@ -17,7 +15,6 @@
                         required>
                         <option value="">-- Pilih Barang --</option>
                         @foreach ($stocks as $stock)
-                            {{-- $stocks dari controller --}}
                             <option value="{{ $stock->id }}"
                                 {{ (string) ($selectedStockId ?? '') === (string) $stock->id ? 'selected' : '' }}>
                                 {{ $stock->name }} (Stok: {{ $stock->stock }})
@@ -29,7 +26,6 @@
                     <label for="duration" class="block mb-1 text-sm font-medium text-gray-700">Durasi Prediksi:</label>
                     <select name="duration" id="duration"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-48 p-2.5">
-                        {{-- $forecastDurationInput dari controller --}}
                         <option value="7" {{ ($forecastDurationInput ?? 30) == 7 ? 'selected' : '' }}>7 Hari Kedepan
                         </option>
                         <option value="30" {{ ($forecastDurationInput ?? 30) == 30 ? 'selected' : '' }}>30 Hari Kedepan
@@ -46,7 +42,6 @@
                     <label for="frequency" class="block mb-1 text-sm font-medium text-gray-700">Frekuensi Data:</label>
                     <select name="frequency" id="frequency"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-48 p-2.5">
-                        {{-- $timeFrequency dari controller --}}
                         <option value="D" {{ ($timeFrequency ?? 'M') == 'D' ? 'selected' : '' }}>Harian</option>
                         <option value="W" {{ ($timeFrequency ?? 'M') == 'W' ? 'selected' : '' }}>Mingguan</option>
                         <option value="M" {{ ($timeFrequency ?? 'M') == 'M' ? 'selected' : '' }}>Bulanan</option>
@@ -117,7 +112,8 @@
                     <ul class="list-disc list-inside mt-2 text-gray-500">
                         <li>Total prediksi pengurangan: <strong>{{ $totalForecasted }}</strong> unit</li>
                         <li>Rata-rata prediksi pengurangan {{ $freqText }}:
-                            <strong>{{ number_format($averageForecasted, 1) }}</strong> unit</li>
+                            <strong>{{ number_format($averageForecasted, 1) }}</strong> unit
+                        </li>
                     </ul>
                     <p class="mt-2 text-xs text-gray-400">Catatan: Ini adalah hasil prediksi berdasarkan model SARIMA dan
                         data historis yang tersedia.</p>
@@ -128,7 +124,6 @@
         </div>
     </div>
 
-    {{-- Chart.js dan Flowbite (jika belum ada di master layout) --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
@@ -146,7 +141,7 @@
 
             function renderActualForecastChart() {
                 const allLabels = [...new Set([...historicalLabels, ...forecastLabels])]
-            .sort(); // Gabung dan urutkan label unik
+                    .sort(); // Gabung dan urutkan label unik
 
                 // Map data historis dan forecast ke semua label, isi dengan null jika tidak ada data
                 const historicalMappedData = allLabels.map(label => {
@@ -164,18 +159,18 @@
                 const historicalDataset = {
                     label: `Penggunaan Aktual: ${currentSelectedStockName}`,
                     data: historicalMappedData, // Gunakan data yang sudah di-map
-                    borderColor: 'rgb(34, 197, 94)', // hijau
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderColor: 'rgb(59, 130, 246)', // biru
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
                     fill: false,
                     tension: 0.1,
                     pointRadius: 3,
                 };
-
+                
                 const forecastDataset = {
                     label: `Prediksi Penggunaan: ${currentSelectedStockName}`,
                     data: forecastMappedData, // Gunakan data yang sudah di-map
-                    borderColor: 'rgb(59, 130, 246)', // biru
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgb(34, 197, 94)', // hijau
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
                     borderDash: [5, 5],
                     fill: false,
                     tension: 0.1,
@@ -210,11 +205,11 @@
                                     // Kurangi jumlah tick jika label terlalu banyak
                                     callback: function(value, index, values) {
                                         if (allLabels.length > 30 && (index % Math.ceil(allLabels.length / 15) !==
-                                            0)) { // Tampilkan sekitar 15 label
+                                                0)) { // Tampilkan sekitar 15 label
                                             return null;
                                         }
                                         return allLabels[
-                                        value]; // allLabels[value] karena 'value' adalah index dari labels
+                                            value]; // allLabels[value] karena 'value' adalah index dari labels
                                     }
                                 }
                             }
@@ -277,7 +272,6 @@
         .chart-container {
             position: relative;
             height: 60vh;
-            /* atau 400px */
             width: 100%;
             max-width: 900px;
             margin: auto;

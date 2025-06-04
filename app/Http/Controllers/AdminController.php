@@ -268,18 +268,34 @@ class AdminController extends Controller
         return 'application/octet-stream';
     }
 
+    // Di dalam AdminController.php
+
     public function forecast(Request $request)
     {
         $stocks = Stock::orderBy('name')->get();
         $selectedStockId = $request->input('stock_id');
-        $forecastDurationInput = (int) $request->input('duration', 30); // Durasi input dari user
-        $timeFrequency = $request->input('frequency', 'M'); // Default Bulanan untuk LSTM agar data tidak terlalu banyak
+        // Durasi input dari user (misal 30 hari, 90 hari)
+        $forecastDurationInput = (int) $request->input('duration', 30);
+        // Frekuensi data yang akan diagregasi dan diforecast
+        $timeFrequency = $request->input('frequency', 'M'); // Default Bulanan ('M'), bisa 'D', 'W'
 
         $historicalData = null;
         $forecastData = null;
         $errorForecast = null;
         $selectedStockName = null;
-        $actualForecastSteps = $forecastDurationInput; // Inisialisasi
+
+        // Tentukan jumlah langkah forecast berdasarkan durasi input dan frekuensi
+        $actualForecastSteps = 0;
+        if ($timeFrequency === 'D') {
+            $actualForecastSteps = $forecastDurationInput;
+        } elseif ($timeFrequency === 'W') {
+            $actualForecastSteps = ceil($forecastDurationInput / 7);
+        } else { // Default Bulanan ('M')
+            $actualForecastSteps = ceil($forecastDurationInput / 30);
+        }
+        // Pastikan minimal 1 step
+        if ($actualForecastSteps < 1) $actualForecastSteps = 1;
+
 
         if ($selectedStockId) {
             $selectedStock = Stock::find($selectedStockId);
@@ -294,67 +310,71 @@ class AdminController extends Controller
 
             if ($timeFrequency === 'D') {
                 $query->addSelect(DB::raw("DATE(orders.created_at) as date_period"));
-                // Untuk LSTM, jika durasi 30 hari, maka steps = 30
-                $actualForecastSteps = $forecastDurationInput;
             } elseif ($timeFrequency === 'W') {
+                // Menggunakan format TAHUN-MINGGUKE agar bisa di-parse pandas dan di-asfreq('W')
                 $query->addSelect(DB::raw("DATE_FORMAT(orders.created_at, '%x-%v') as date_period"));
-                // Jika durasi 30 hari (sekitar 4 minggu), steps = 4. Jika 90 hari (sekitar 12 minggu), steps = 12
-                $actualForecastSteps = ceil($forecastDurationInput / 7);
             } else { // Default Bulanan ('M')
                 $query->addSelect(DB::raw("DATE_FORMAT(orders.created_at, '%Y-%m-01') as date_period"));
-                // Jika durasi 30 hari (1 bulan), steps = 1. Jika 90 hari (3 bulan), steps = 3
-                $actualForecastSteps = ceil($forecastDurationInput / 30);
             }
 
             $historicalDeductions = $query->get();
 
-            // Minimal data untuk LSTM (misal, sequence_length + beberapa data untuk training)
-            $minDataPointsForLstm = 12 + 10; // Contoh: sequence 12, minimal 10 data training
-            if ($historicalDeductions->count() >= $minDataPointsForLstm) {
+            // Minimal data untuk SARIMA (misal, 2 * periode musiman)
+            // Ini akan dicek lebih detail di script Python juga
+            $minDataPointsForSarima = 15; // Angka awal, sesuaikan
+            if ($timeFrequency === 'M') $minDataPointsForSarima = 24; // Misal 2 tahun data bulanan
+
+            if ($historicalDeductions->count() >= $minDataPointsForSarima) {
                 $historicalDataForPython = $historicalDeductions->map(function ($item) {
-                    return ['date_period' => $item->date_period, 'value' => (int)$item->value];
+                    // Pastikan date_period adalah string yang bisa di-parse pd.to_datetime
+                    // Jika mingguan '%x-%v', Python mungkin perlu parsing khusus atau kita ubah formatnya di sini
+                    // Untuk '%x-%v', pandas bisa parse dengan format='%G-%V' (ISO year and week)
+                    // atau kita bisa konversi ke tanggal awal minggu di sini.
+                    // Untuk simplicity, kita biarkan dan pastikan Python bisa handle.
+                    return ['date_period' => (string)$item->date_period, 'value' => (int)$item->value];
                 })->toJson();
 
-                // Parameter untuk script Python LSTM (bisa disesuaikan)
-                $sequenceLength = 12; // Jika data bulanan, ini berarti 1 tahun historis untuk prediksi
-                if ($timeFrequency === 'W') $sequenceLength = 8; // Misal 8 minggu
-                if ($timeFrequency === 'D') $sequenceLength = 30; // Misal 30 hari
-                if ($historicalDeductions->count() <= $sequenceLength + 2) { // Jika data sangat mepet
-                    $sequenceLength = floor($historicalDeductions->count() * 0.6); // Kurangi sequence length
-                    if ($sequenceLength < 3) $sequenceLength = 3; // Batas bawah
+                // 2. Tentukan Parameter SARIMA
+                // (p,d,q) untuk non-musiman, (P,D,Q,s) untuk musiman
+                // 's' adalah panjang siklus musiman (misal 7 untuk harian-mingguan, 12 untuk bulanan-tahunan, 52 untuk mingguan-tahunan)
+                $sarimaOrder = '1,1,1'; // Contoh (p,d,q)
+                $seasonalOrder = '1,1,0,12'; // Contoh (P,D,Q,s) untuk data bulanan dengan siklus tahunan (s=12)
+
+                if ($timeFrequency === 'D') {
+                    $seasonalOrder = '1,1,0,7'; // Musiman mingguan untuk data harian
+                } elseif ($timeFrequency === 'W') {
+                    // Jika data mingguan, musiman tahunan s=52. Jika data tidak cukup, mungkin s=4 (musim per bulan)
+                    $seasonalOrder = (count($historicalDeductions) > 104) ? '1,1,0,52' : '1,1,0,4';
                 }
 
+                $pythonPath = 'python';
+                $scriptPath = base_path('scripts/sarima_forecaster.py');
 
-                $epochs = 100; // Jumlah epoch bisa ditingkatkan untuk model yang lebih baik
-                $batchSize = 1;
+                Log::info("Running SARIMA: {$pythonPath} {$scriptPath} '{$historicalDataForPython}' {$actualForecastSteps} {$sarimaOrder} {$seasonalOrder} {$timeFrequency}");
 
-                $pythonPath = 'python3';
-                $scriptPath = base_path('scripts/lstm_forecaster.py');
-
-                Log::info("Running LSTM: {$pythonPath} {$scriptPath} '{$historicalDataForPython}' {$actualForecastSteps} {$timeFrequency} {$sequenceLength} {$epochs} {$batchSize}");
-
-                $process = new Process([
+                $pendingProcess = Process::command([
                     $pythonPath,
                     $scriptPath,
                     $historicalDataForPython,
                     (string)$actualForecastSteps,
-                    $timeFrequency,
-                    (string)$sequenceLength,
-                    (string)$epochs,
-                    (string)$batchSize
-                ]);
-                $process->setTimeout(120); // Set timeout lebih lama untuk training LSTM
-                $process->run();
+                    $sarimaOrder,
+                    $seasonalOrder,
+                    $timeFrequency
+                ])->timeout(120); // Set timeout
 
-                if (!$process->isSuccessful()) {
-                    $errorForecast = "Error Python LSTM: " . $process->getErrorOutput();
-                    Log::error("LSTM Process Failed: " . $process->getErrorOutput() . " | Output: " . $process->getOutput());
+                $result = $pendingProcess->run();
+
+                if (!$result->successful()) {
+                    $errorOutput = $result->errorOutput();
+                    $standardOutput = $result->output();
+                    $errorForecast = "Error Python SARIMA: " . $errorOutput . ($standardOutput ? " | Output: " . $standardOutput : "");
+                    Log::error("SARIMA Process Failed: " . $errorOutput . " | Output: " . $standardOutput);
                 } else {
-                    $outputJson = $process->getOutput();
-                    Log::info("LSTM Output: " . $outputJson);
+                    $outputJson = $result->output();
+                    Log::info("SARIMA Output: " . $outputJson);
                     $decodedOutput = json_decode($outputJson, true);
                     if (isset($decodedOutput['error'])) {
-                        $errorForecast = "Error from LSTM script: " . $decodedOutput['error'] . (isset($decodedOutput['trace']) ? " Trace: " . $decodedOutput['trace'] : "");
+                        $errorForecast = "Error from SARIMA script: " . $decodedOutput['error'] . (isset($decodedOutput['trace']) ? " Trace: " . $decodedOutput['trace'] : "");
                         Log::error($errorForecast);
                     } else {
                         $historicalData = [
@@ -368,14 +388,14 @@ class AdminController extends Controller
                     }
                 }
             } else {
-                $errorForecast = "Tidak cukup data historis (perlu min. {$minDataPointsForLstm} periode, ditemukan {$historicalDeductions->count()}) untuk membuat forecast LSTM untuk item ini dengan frekuensi '{$timeFrequency}'.";
+                $errorForecast = "Tidak cukup data historis (perlu min. {$minDataPointsForSarima} periode '{$timeFrequency}', ditemukan {$historicalDeductions->count()}) untuk membuat forecast SARIMA untuk item ini.";
             }
         }
 
         return view('dashboard.forecast', compact(
             'stocks',
             'selectedStockId',
-            'forecastDurationInput', // Kirim durasi input asli
+            'forecastDurationInput',
             'timeFrequency',
             'historicalData',
             'forecastData',

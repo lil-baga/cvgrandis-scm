@@ -15,5 +15,15 @@ class Stock extends Model
         'stock',
         'low_stock',
         'status',
+        'is_active',
     ];
+    public function stockDeductions()
+    {
+        return $this->hasMany(OrderStockDeduction::class);
+    }
+
+    public function stockOrders()
+    {
+        return $this->hasMany(StockOrder::class);
+    }
 }

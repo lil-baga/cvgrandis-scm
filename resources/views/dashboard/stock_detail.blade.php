@@ -81,6 +81,25 @@
                 </div>
             </div>
 
+            <div class="mt-8 pt-6 border-t">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Buat Pesanan Stok ke Supplier</h3>
+                <form action="{{ route('stock.order', $stock->id) }}" method="POST">
+                    @csrf
+                    <div class="flex items-end space-x-3">
+                        <div class="flex-grow">
+                            <label for="quantity" class="block mb-1 text-sm font-medium text-gray-700">Jumlah yang
+                                Dipesan:</label>
+                            <input type="number" name="quantity" id="quantity"
+                                class="bg-gray-50 border border-gray-300 rounded-lg w-full p-2.5" required min="1">
+                        </div>
+                        <button type="submit"
+                            class="text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg text-sm px-5 py-2.5 h-fit">
+                            Buat Pesanan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
             <div class="mt-6 pt-6 border-t flex space-x-3">
                 @if (Auth::check() && (Auth::user()->hasRole('Administrator') || Auth::user()->hasRole('Supplier')))
                     <button data-modal-target="editStockItemModalDetail" data-modal-toggle="editStockItemModalDetail"
@@ -164,7 +183,8 @@
                         </div>
                         {{-- Field Batas Stok Rendah (dikontrol oleh JS) --}}
                         <div id="editFieldLowStockContainer">
-                            <label for="editDetailLowStock" class="block mb-2 text-sm font-medium text-gray-900">Batas Stok
+                            <label for="editDetailLowStock" class="block mb-2 text-sm font-medium text-gray-900">Batas
+                                Stok
                                 Rendah</label>
                             <input type="number" name="low_stock" id="editDetailLowStock"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"

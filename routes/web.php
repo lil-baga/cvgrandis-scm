@@ -23,13 +23,15 @@ Route::middleware(['auth'])->group(function () {
     
     Route::middleware(['role:Administrator,Supplier'])->group(function () {
         Route::get('/dashboard', [SupplierController::class, 'index'])->name('stock');
+    });
+    
+    Route::middleware(['role:Administrator'])->group(function () {
         Route::get('/dashboard/stock/{stock}', [SupplierController::class, 'show'])->name('stock.show');
+        Route::post('/dashboard/stock/{stock}/toggle-status', [SupplierController::class, 'toggle'])->name('stock.toggle');
         Route::post('/stocks', [SupplierController::class, 'store'])->name('stock.store');
         Route::put('/dashboard/stock/{stock}', [SupplierController::class, 'update'])->name('stock.update');
+        Route::post('/dashboard/stock/{stock}/order', [SupplierController::class, 'orderStock'])->name('stock.order');
         Route::delete('/dashboard/stock/{stock}', [SupplierController::class, 'destroy'])->name('stock.destroy');
-    });
-
-    Route::middleware(['role:Administrator'])->group(function () {
         Route::get('/order-list', [AdminController::class, 'order'])->name('order.list');
         Route::get('/orders/{order}/show', [AdminController::class, 'show'])->name('order.show');
         Route::post('/orders/{order}/update-status', [AdminController::class, 'update'])->name('order.update');
@@ -37,5 +39,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/orders/{order}/adjust-stock', [AdminController::class, 'adjustStockForOrder'])->name('order.adjust');
         Route::get('/forecast', [AdminController::class, 'forecast'])->name('forecast');
     });
-
+    
+    Route::middleware(['role:Supplier'])->group(function () {
+        Route::post('/dashboard/stock-orders/{stockOrder}/fulfill', [SupplierController::class, 'fulfillOrder'])->name('stock.fulfill');
+    });
+    
 });

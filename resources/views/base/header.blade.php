@@ -6,19 +6,24 @@
         <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
             <ul
                 class="flex flex-col md:flex-row justify-between p-4 md:p-0 mt-4 gap-16 md:mt-0 font-medium border border-gray-100 md:border-0 rounded-lg bg-gray-50 md:bg-white">
-                <li>
-                    <a href="/dashboard"
-                        class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Dashboard</a>
-                </li>
-                <li>
-                    <a href="/order-list"
-                        class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Order
-                        List</a>
-                </li>
-                <li>
-                    <a href="/forecast"
-                        class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Forecast</a>
-                </li>
+                @guest
+                @else
+                    <li>
+                        <a href="/dashboard"
+                            class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Dashboard</a>
+                    </li>
+                    @if (Auth::user()->hasRole('Administrator'))
+                        <li>
+                            <a href="{{ route('order.list') }}"
+                                class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Order
+                                List</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('forecast') }}"
+                                class="block py-2 px-3 text-gray-800 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-900 md:p-0">Forecast</a>
+                        </li>
+                    @endif
+                @endguest
             </ul>
         </div>
         <div class="flex md:order-2 space-x-3 md:space-x-0 gap-8">

@@ -65,4 +65,9 @@ class User extends Authenticatable
         }
         return false;
     }
+
+    public function stockOrders()
+    {
+        return $this->hasMany(StockOrder::class, 'user_id');
+    }
 }

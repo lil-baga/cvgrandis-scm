@@ -264,7 +264,7 @@
 
 @push('script')
     <script>
-        const allAvailableStockItems = @json($stockItems ?? []);
+        const allAvailableStockItems = @json($allStockItems ?? []);
         let selectedStockForAdjustment = [];
 
         const selectedStockListDiv = document.getElementById('selectedStockForAdjustmentList');

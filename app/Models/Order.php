@@ -19,6 +19,7 @@ class Order extends Model
         'status',
         'original_filename',
         'mime_type',
+        'path'
     ];
 
     protected $casts = [

@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LandingController;
@@ -9,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 // Rute Publik
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/landing', [LandingController::class, 'index'])->name('landing');
+Route::get('/interval', [LandingController::class, 'interval'])->name('interval');
 Route::get('/order-form', [LandingController::class, 'form'])->name('order.form');
 Route::post('/order-store', [LandingController::class, 'store'])->name('order.store');
 
@@ -43,5 +43,5 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:Supplier'])->group(function () {
         Route::post('/dashboard/stock-orders/{stockOrder}/fulfill', [SupplierController::class, 'fulfillOrder'])->name('stock.fulfill');
     });
-    
+
 });

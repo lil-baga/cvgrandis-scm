@@ -10,11 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    //
     public function order(Request $request)
     {
         $statusFilter = $request->query('status');
@@ -74,25 +73,45 @@ class AdminController extends Controller
         ]);
     }
 
-    public function show(Order $order)
+public function show(Order $order)
     {
+        // 2. Siapkan detail file lampiran jika ada
         $fileAttachmentDetails = null;
-        if ($order->image_ref) {
-            $fileName = $order->original_filename ?? "attachment_order_{$order->id}.dat";
-            $fileType = $order->mime_type ?? $this->getMimeTypeFromBinary($order->image_ref);
+        // Gunakan image_ref_path (path file) untuk mengecek keberadaan file
+        if ($order->image_ref && $order->original_filename) {
             $fileAttachmentDetails = (object) [
-                'name' => $fileName,
-                'type' => $fileType,
-                'url' => route('order.attachments', $order->id)
+                'name' => $order->original_filename,
+                'type' => $order->mime_type ?? 'application/octet-stream',
+                // URL untuk mengambil file melalui route serveAttachment
+                // Pastikan nama route ini ('order-attachments') sesuai dengan web.php
+                'url' => route('order.attachments', ['orderId' => $order->id]) 
             ];
         }
 
-        $stockItems = Stock::orderBy('name', 'asc')->get();
+        // 3. Ambil semua item stok untuk ditampilkan di modal pemilihan
+        $allStockItems = Stock::orderBy('name', 'asc')->get();
+        
+        // 4. Ambil stok yang sudah dikurangi untuk order ini, untuk pre-fill form di JavaScript
+        $deductedStockItemsForThisOrder = $order->stockDeductions->map(function ($deduction) {
+            if ($deduction->stock) { // Pastikan relasi stock ada
+                return (object) [
+                    'id' => $deduction->stock->id,
+                    'name' => $deduction->stock->name,
+                    'type' => $deduction->stock->type,
+                    'current_stock_available' => $deduction->stock->stock, // Stok TERKINI dari tabel stocks
+                    'quantity_deducted_for_this_order' => $deduction->quantity_deducted // Total yang sudah dikurangi
+                ];
+            }
+            return null;
+        })->filter()->values(); // filter() untuk menghapus null, values() untuk re-index array
 
+        // 5. Kirim semua data yang diperlukan ke view
+        // Pastikan nama view ini benar: 'dashboard.order_detail'
         return view('dashboard.order_detail', [
             'order' => $order,
             'fileAttachmentDetails' => $fileAttachmentDetails,
-            'stockItems' => $stockItems
+            'allStockItems' => $allStockItems,
+            'deductedStockItems' => $deductedStockItemsForThisOrder
         ]);
     }
 
@@ -165,8 +184,6 @@ class AdminController extends Controller
                                 'stock_id' => $stockItem->id,
                             ],
                             [
-                                // Jika ditemukan, tambahkan quantity_deducted, jika tidak buat baru.
-                                // Ini akan mengakumulasi jika item yang sama di-adjust berkali-kali untuk order yang sama.
                                 'quantity_deducted' => DB::raw("quantity_deducted + {$actualDeducted}")
                             ]
                         );
@@ -196,50 +213,20 @@ class AdminController extends Controller
     {
         $order = Order::findOrFail($orderId);
 
-        if ($order->image_ref) {
-            $originalFilename = $order->original_filename ?? null;
-            $mimeType = $order->mime_type ?? $this->getMimeTypeFromBinary($order->image_ref);
+        // Gunakan kolom 'image_ref' yang sekarang berisi path
+        $filePath = $order->path;
 
-            $downloadFilename = "attachment_order_{$order->id}";
-
-            if ($originalFilename && pathinfo($originalFilename, PATHINFO_EXTENSION)) {
-                $downloadFilename = $originalFilename;
-            } else {
-                $extension = $this->getExtensionFromMimeType($mimeType);
-                if ($originalFilename) {
-                    $downloadFilename = pathinfo($originalFilename, PATHINFO_FILENAME) . '.' . $extension;
-                } else {
-                    $downloadFilename .= '.' . $extension;
-                }
-            }
-
-            $downloadFilename = preg_replace('/[^A-Za-z0-9_.-]/', '_', $downloadFilename);
-
-            return Response::make($order->image_ref, 200, [
-                'Content-Type' => $mimeType,
-                'Content-Disposition' => 'inline; filename="' . $downloadFilename . '"'
-            ]);
+        // Cek apakah path ada dan file benar-benar ada di disk 'public'
+        if ($filePath && Storage::disk('public')->exists($filePath)) {
+            $fileName = $order->original_filename ?? basename($filePath);
+            
+            // Cara termudah untuk memaksa download
+            return Storage::disk('public');
         }
 
-        abort(404, 'File not found.');
+        abort(404, 'File lampiran tidak ditemukan.');
     }
 
-    private function getExtensionFromMimeType(string $mimeType): string
-    {
-        $mimeMap = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/webp' => 'webp',
-            'application/pdf' => 'pdf',
-            'application/zip' => 'zip',
-            'application/msword' => 'doc',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-            'application/vnd.ms-excel' => 'xls',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
-        ];
-        return $mimeMap[strtolower($mimeType)] ?? 'dat';
-    }
 
     private function getMimeTypeFromBinary($binaryData): string
     {

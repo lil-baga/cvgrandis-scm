@@ -145,37 +145,38 @@
                 </form>
             </div>
 
-            @if ($fileAttachmentDetails)
+            @if ($fileAttachmentDetails && $fileAttachmentDetails->url)
                 <div class="mt-6 pt-4 border-t">
                     <h4 class="font-semibold text-gray-700 mb-2">File Lampiran: {{ $fileAttachmentDetails->name }}</h4>
                     @php
                         $fileType = $fileAttachmentDetails->type;
-                        $fileUrl = $fileAttachmentDetails->url;
-                        $extension = pathinfo($fileAttachmentDetails->name, PATHINFO_EXTENSION);
+                        $fileUrl = $fileAttachmentDetails->url; // Ini adalah URL ke route serveAttachment
+                        $originalFileName = $fileAttachmentDetails->name;
+                        $extension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
                     @endphp
 
-                    @if (Str::startsWith($fileType, 'image/') || in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                        <img src="{{ $fileUrl }}" alt="Preview Lampiran {{ $fileAttachmentDetails->name }}"
+                    {{-- Logika untuk menampilkan preview --}}
+                    @if (Str::startsWith($fileType, 'image/'))
+                        {{-- src sekarang memanggil route, dan controller akan merespons dengan gambar --}}
+                        <img src="{{ asset($order->path) }}" alt="Preview Lampiran: {{ $originalFileName }}"
                             class="max-w-full h-auto rounded-lg border max-h-96 mb-2">
-                    @elseif ($fileType === 'application/pdf' || strtolower($extension) === 'pdf')
+                        <a href="{{ asset($order->path) }}" download="{{ $originalFileName }}"
+                            class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Unduh File</a>
+                    @elseif ($fileType === 'application/pdf' || $extension === 'pdf')
                         <div class="mb-2">
                             <p class="text-sm text-gray-600 mb-1">Preview PDF:</p>
-                            <iframe src="{{ $fileUrl }}" class="w-full h-96 border rounded-lg"
-                                frameborder="0"></iframe>
+                            {{-- iframe juga menggunakan route yang sama --}}
+                            <iframe src="{{ asset($order->path) }}" class="w-full h-full border rounded-lg" frameborder="0"
+                                title="PDF Preview {{ $originalFileName }}"></iframe>
                         </div>
                     @else
-                        <p class="text-sm text-gray-600 mb-2">Preview tidak tersedia untuk tipe file ini
-                            ({{ $fileType ?: $extension }}).</p>
-                    @endif
-                    <a href="{{ $fileUrl }}" target="_blank" download="{{ $fileAttachmentDetails->name }}"
+                        <p class="text-sm text-gray-600 mb-2">Preview tidak tersedia untuk tipe file ini.</p>
+                        <a href="{{ asset($order->path) }}" download="{{ $originalFileName }}"
                         class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 16 18">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 1v11m0 0 4-4m-4 4L4 8m11 4v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3" />
-                        </svg>
-                        Unduh File
-                    </a>
+                        Unduh File</a>
+                    @endif
+
                 </div>
             @else
                 <div class="mt-6 pt-4 border-t">

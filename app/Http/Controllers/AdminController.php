@@ -73,40 +73,32 @@ class AdminController extends Controller
         ]);
     }
 
-public function show(Order $order)
+    public function show(Order $order)
     {
-        // 2. Siapkan detail file lampiran jika ada
         $fileAttachmentDetails = null;
-        // Gunakan image_ref_path (path file) untuk mengecek keberadaan file
         if ($order->image_ref && $order->original_filename) {
             $fileAttachmentDetails = (object) [
                 'name' => $order->original_filename,
                 'type' => $order->mime_type ?? 'application/octet-stream',
-                // URL untuk mengambil file melalui route serveAttachment
-                // Pastikan nama route ini ('order-attachments') sesuai dengan web.php
-                'url' => route('order.attachments', ['orderId' => $order->id]) 
+                'url' => route('order.attachments', ['orderId' => $order->id])
             ];
         }
 
-        // 3. Ambil semua item stok untuk ditampilkan di modal pemilihan
         $allStockItems = Stock::orderBy('name', 'asc')->get();
-        
-        // 4. Ambil stok yang sudah dikurangi untuk order ini, untuk pre-fill form di JavaScript
+
         $deductedStockItemsForThisOrder = $order->stockDeductions->map(function ($deduction) {
-            if ($deduction->stock) { // Pastikan relasi stock ada
+            if ($deduction->stock) {
                 return (object) [
                     'id' => $deduction->stock->id,
                     'name' => $deduction->stock->name,
                     'type' => $deduction->stock->type,
-                    'current_stock_available' => $deduction->stock->stock, // Stok TERKINI dari tabel stocks
-                    'quantity_deducted_for_this_order' => $deduction->quantity_deducted // Total yang sudah dikurangi
+                    'current_stock_available' => $deduction->stock->stock,
+                    'quantity_deducted_for_this_order' => $deduction->quantity_deducted
                 ];
             }
             return null;
-        })->filter()->values(); // filter() untuk menghapus null, values() untuk re-index array
+        })->filter()->values();
 
-        // 5. Kirim semua data yang diperlukan ke view
-        // Pastikan nama view ini benar: 'dashboard.order_detail'
         return view('dashboard.order_detail', [
             'order' => $order,
             'fileAttachmentDetails' => $fileAttachmentDetails,
@@ -140,7 +132,7 @@ public function show(Order $order)
     {
         $adjustments = $request->input('adjustments', []);
         $adjustedItemsCount = 0;
-        $processedStockIds = []; // Untuk melacak stok yang sudah diproses dalam batch ini
+        $processedStockIds = [];
 
         if (!is_array($adjustments) || empty($adjustments)) {
             return redirect()->route('order.show', $order->id)->with('error', 'Tidak ada data penyesuaian stok yang dikirim.');
@@ -152,25 +144,23 @@ public function show(Order $order)
                 $quantityToDeduct = (int) $quantityToDeduct;
 
                 if ($quantityToDeduct > 0) {
-                    // Menggunakan lockForUpdate untuk mencegah race condition jika ada banyak request bersamaan
                     $stockItem = Stock::where('id', $stockId)->lockForUpdate()->first();
 
                     if ($stockItem) {
-                        $originalStockLevel = $stockItem->stock; // Simpan level stok asli sebelum dikurangi
+                        $originalStockLevel = $stockItem->stock;
 
                         if ($stockItem->stock < $quantityToDeduct) {
                             Log::warning("Stok tidak cukup untuk {$stockItem->name} (ID: {$stockId}) pada Order #{$order->id}. Diminta: {$quantityToDeduct}, Tersedia: {$stockItem->stock}. Stok diatur jadi 0.");
-                            $actualDeducted = $stockItem->stock; // Hanya bisa mengurangi sebanyak stok yang ada
+                            $actualDeducted = $stockItem->stock;
                             $stockItem->stock = 0;
                         } else {
                             $actualDeducted = $quantityToDeduct;
                             $stockItem->stock -= $quantityToDeduct;
                         }
 
-                        // Update status stok item
                         if ($stockItem->stock <= 0) {
                             $stockItem->status = 'out_of_stock';
-                            $stockItem->stock = 0; // Pastikan tidak negatif
+                            $stockItem->stock = 0;
                         } elseif ($stockItem->stock <= $stockItem->low_stock) {
                             $stockItem->status = 'low_stock';
                         } else {
@@ -213,14 +203,10 @@ public function show(Order $order)
     {
         $order = Order::findOrFail($orderId);
 
-        // Gunakan kolom 'image_ref' yang sekarang berisi path
         $filePath = $order->path;
 
-        // Cek apakah path ada dan file benar-benar ada di disk 'public'
         if ($filePath && Storage::disk('public')->exists($filePath)) {
             $fileName = $order->original_filename ?? basename($filePath);
-            
-            // Cara termudah untuk memaksa download
             return Storage::disk('public');
         }
 
@@ -248,14 +234,13 @@ public function show(Order $order)
         $stocks = Stock::orderBy('name')->get();
         $selectedStockId = $request->input('stock_id');
         $forecastDurationInput = (int) $request->input('duration', 30);
-        $timeFrequency = $request->input('frequency', 'D'); // Default Bulanan ('M'), bisa 'D', 'W'
+        $timeFrequency = $request->input('frequency', 'D');
 
         $historicalData = null;
         $forecastData = null;
         $errorForecast = null;
         $selectedStockName = null;
 
-        // Tentukan jumlah langkah forecast berdasarkan durasi input dan frekuensi
         $actualForecastSteps = 0;
         if ($timeFrequency === 'D') {
             $actualForecastSteps = $forecastDurationInput;
@@ -271,7 +256,6 @@ public function show(Order $order)
             $selectedStock = Stock::find($selectedStockId);
             $selectedStockName = $selectedStock ? $selectedStock->name : 'Unknown Stock';
 
-            // 1. Agregasi data historis
             $query = OrderStockDeduction::where('stock_id', $selectedStockId)
                 ->join('orders', 'order_stock_deductions.order_id', '=', 'orders.id')
                 ->select(DB::raw("SUM(order_stock_deductions.quantity_deducted) as value"))
@@ -281,39 +265,27 @@ public function show(Order $order)
             if ($timeFrequency === 'D') {
                 $query->addSelect(DB::raw("DATE(orders.created_at) as date_period"));
             } elseif ($timeFrequency === 'W') {
-                // Menggunakan format TAHUN-MINGGUKE agar bisa di-parse pandas dan di-asfreq('W')
                 $query->addSelect(DB::raw("DATE_FORMAT(orders.created_at, '%x-%v') as date_period"));
-            } else { // Default Bulanan ('M')
+            } else {
                 $query->addSelect(DB::raw("DATE_FORMAT(orders.created_at, '%Y-%m-01') as date_period"));
             }
 
             $historicalDeductions = $query->get();
 
-            // Minimal data untuk SARIMA (misal, 2 * periode musiman)
-            // Ini akan dicek lebih detail di script Python juga
-            $minDataPointsForSarima = 15; // Angka awal, sesuaikan
-            if ($timeFrequency === 'M') $minDataPointsForSarima = 24; // Misal 2 tahun data bulanan
+            $minDataPointsForSarima = 15;
+            if ($timeFrequency === 'M') $minDataPointsForSarima = 24;
 
             if ($historicalDeductions->count() >= $minDataPointsForSarima) {
                 $historicalDataForPython = $historicalDeductions->map(function ($item) {
-                    // Pastikan date_period adalah string yang bisa di-parse pd.to_datetime
-                    // Jika mingguan '%x-%v', Python mungkin perlu parsing khusus atau kita ubah formatnya di sini
-                    // Untuk '%x-%v', pandas bisa parse dengan format='%G-%V' (ISO year and week)
-                    // atau kita bisa konversi ke tanggal awal minggu di sini.
-                    // Untuk simplicity, kita biarkan dan pastikan Python bisa handle.
                     return ['date_period' => (string)$item->date_period, 'value' => (int)$item->value];
                 })->toJson();
 
-                // 2. Tentukan Parameter SARIMA
-                // (p,d,q) untuk non-musiman, (P,D,Q,s) untuk musiman
-                // 's' adalah panjang siklus musiman (misal 7 untuk harian-mingguan, 12 untuk bulanan-tahunan, 52 untuk mingguan-tahunan)
-                $sarimaOrder = '1,1,1'; // Contoh (p,d,q)
-                $seasonalOrder = '1,1,0,12'; // Contoh (P,D,Q,s) untuk data bulanan dengan siklus tahunan (s=12)
+                $sarimaOrder = '1,1,1';
+                $seasonalOrder = '1,1,0,12';
 
                 if ($timeFrequency === 'D') {
-                    $seasonalOrder = '1,1,0,7'; // Musiman mingguan untuk data harian
+                    $seasonalOrder = '1,1,0,7';
                 } elseif ($timeFrequency === 'W') {
-                    // Jika data mingguan, musiman tahunan s=52. Jika data tidak cukup, mungkin s=4 (musim per bulan)
                     $seasonalOrder = (count($historicalDeductions) > 104) ? '1,1,0,52' : '1,1,0,4';
                 }
 
@@ -330,7 +302,7 @@ public function show(Order $order)
                     $sarimaOrder,
                     $seasonalOrder,
                     $timeFrequency
-                ])->timeout(120); // Set timeout
+                ])->timeout(120);
 
                 $result = $pendingProcess->run();
 

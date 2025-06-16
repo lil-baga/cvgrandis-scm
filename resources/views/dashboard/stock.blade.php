@@ -21,16 +21,13 @@
 
         {{-- Filter dan Tombol Tambah --}}
         <div class="mb-4 p-6 bg-white shadow-md rounded-lg flex flex-col sm:flex-row justify-between items-center">
-            {{-- Tombol Filter Aktivitas BARU --}}
             <div class="flex items-center space-x-2 mb-4 sm:mb-0">
-                {{-- Tombol Stok Aktif --}}
                 <a href="{{ route('stock', ['activity_status' => 'active']) }}"
                     class="px-4 py-2 text-sm font-medium rounded-lg {{ ($activityFilter ?? 'inactive') == 'active' ? 'bg-blue-700 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100' }}">
                     Stok Aktif
                 </a>
-                {{-- Tombol Stok Non-Aktif --}}
                 <a href="{{ route('stock', ['activity_status' => 'inactive']) }}"
-                    class="px-4 py-2 text-sm font-medium rounded-lg {{ ($activityFilter ?? 'active') == 'inactive' ? 'bg-blue-700 text-white': 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100' }}">
+                    class="px-4 py-2 text-sm font-medium rounded-lg {{ ($activityFilter ?? 'active') == 'inactive' ? 'bg-blue-700 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100' }}">
                     Stok Non-Aktif
                 </a>
             </div>
@@ -233,10 +230,8 @@
                     </svg>
                     <h3 id="confirmationModalMessage" class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
                         Apakah Anda yakin?</h3>
-                    {{-- Form ini akan dikirim oleh tombol "Ya" --}}
                     <form id="confirmationModalForm" method="POST">
                         @csrf
-                        {{-- @method() akan diatur oleh JavaScript jika diperlukan --}}
                         <input type="hidden" id="confirmationModalMethod" name="_method" value="POST">
 
                         <button id="confirmationModalConfirmButton" type="submit"

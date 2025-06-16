@@ -16,10 +16,9 @@ class SupplierController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $activityFilter = $request->query('activity_status', 'active'); // Default 'active'
+        $activityFilter = $request->query('activity_status', 'active');
 
         if ($user->hasRole('Administrator')) {
-            // Logika untuk Administrator (sudah ada): menampilkan semua stok
             $search = $request->query('search');
             $query = Stock::query();
             if ($search) {
@@ -34,25 +33,21 @@ class SupplierController extends Controller
 
             $stocks = $query->orderBy('name', 'asc')->paginate(15);
             $totalItems = Stock::count();
-            // ... (statistik lainnya)
-            return view('dashboard.stock', compact('stocks', 'totalItems', /*...*/));
+            $lowStockItems = Stock::where('status', 'low_stock')->count();
+            $outOfStockItems = Stock::where('status', 'out_of_stock')->count();
+            return view('dashboard.stock', compact('stocks', 'totalItems', 'lowStockItems', 'outOfStockItems'));
         } elseif ($user->hasRole('Supplier')) {
-            // --- LOGIKA BARU UNTUK SUPPLIER ---
 
-            // Query dasar untuk pesanan stok yang pending
             $pendingOrdersQuery = StockOrder::where('status', 'pending');
 
-            // Hitung statistik berdasarkan query dasar
-            $totalPendingOrders = $pendingOrdersQuery->count();
-            $totalUniqueItemsRequested = $pendingOrdersQuery->distinct('stock_id')->count('stock_id');
-            $totalQuantityRequested = $pendingOrdersQuery->distinct('quantity_requested')->sum('quantity_requested');
+            $totalPendingOrders = (clone $pendingOrdersQuery)->count();
+            $totalUniqueItemsRequested = (clone $pendingOrdersQuery)->distinct()->count('stock_id');
+            $totalQuantityRequested = (clone $pendingOrdersQuery)->sum('quantity_requested');
 
-            // Ambil data untuk tabel dengan paginasi
             $pendingStockOrders = $pendingOrdersQuery->with(['stock', 'requester'])
                 ->orderBy('created_at', 'asc')
                 ->paginate(15);
 
-            // Kirim data pesanan dan statistik ke view
             return view('dashboard.stock_order', compact(
                 'pendingStockOrders',
                 'totalPendingOrders',
@@ -61,7 +56,6 @@ class SupplierController extends Controller
             ));
         }
 
-        // Fallback
         return redirect()->route('landing')->with('error', 'Anda tidak memiliki akses.');
     }
 
@@ -81,7 +75,6 @@ class SupplierController extends Controller
     public function toggle(Stock $stock)
     {
         try {
-            // Balikkan nilai boolean is_active
             $stock->is_active = !$stock->is_active;
             $stock->save();
 
@@ -99,13 +92,11 @@ class SupplierController extends Controller
             return redirect()->back()->with('error', 'Pesanan stok ini sudah diproses sebelumnya.');
         }
 
-        // Gunakan transaksi untuk menjaga konsistensi data
         DB::transaction(function () use ($stockOrder) {
-            // 1. Update stok utama
-            $stockItem = $stockOrder->stock; // Mengambil item stok terkait
+
+            $stockItem = $stockOrder->stock;
             $stockItem->increment('stock', $stockOrder->quantity_requested);
 
-            // 2. Update status stok utama jika perlu (misal dari 'out_of_stock')
             if ($stockItem->stock > $stockItem->low_stock) {
                 $stockItem->status = 'in_stock';
             } elseif ($stockItem->stock > 0) {
@@ -113,7 +104,6 @@ class SupplierController extends Controller
             }
             $stockItem->save();
 
-            // 3. Update status pesanan stok
             $stockOrder->update([
                 'status' => 'fulfilled',
                 'fulfilled_by' => Auth::id(),
@@ -181,7 +171,6 @@ class SupplierController extends Controller
             ];
             $validatedData = $request->validate($rules);
 
-            // Hitung total stok baru
             $quantityToAdd = $validatedData['stock'];
             $newTotalStock = $stock->stock + $quantityToAdd;
 
@@ -190,15 +179,14 @@ class SupplierController extends Controller
             return redirect()->route('stock.show', $stock->id)->with('error', 'Anda tidak memiliki izin untuk melakukan aksi ini.');
         }
 
-        // Tentukan status baru berdasarkan stok yang akan diupdate
-        $currentStockForStatus = $dataToUpdate['stock']; // Ini sudah total stok baru
+        $currentStockForStatus = $dataToUpdate['stock'];
         $lowStockThresholdToCompare = ($user->hasRole('Administrator') && isset($dataToUpdate['low_stock']))
             ? $dataToUpdate['low_stock']
-            : $stock->low_stock; // Untuk supplier, low_stock tidak berubah
+            : $stock->low_stock;
 
         if ($currentStockForStatus <= 0) {
             $dataToUpdate['status'] = 'out_of_stock';
-            $dataToUpdate['stock'] = 0; // Pastikan tidak negatif
+            $dataToUpdate['stock'] = 0;
         } elseif ($currentStockForStatus <= $lowStockThresholdToCompare) {
             $dataToUpdate['status'] = 'low_stock';
         } else {
@@ -206,12 +194,12 @@ class SupplierController extends Controller
         }
 
         try {
-            $stock->update($dataToUpdate); // Hanya field di $dataToUpdate yang akan diupdate
+            $stock->update($dataToUpdate);
             return redirect()->route('stock.show', $stock->id)->with('success', 'Stok barang berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error("Gagal update stok #{$stock->id}: " . $e->getMessage());
 
-            $validator = Validator::make([], []); // Dummy validator jika $request->validator null
+            $validator = Validator::make([], []);
             if (isset($request->validator) && $request->validator->fails()) {
                 $validator = $request->validator;
             }
@@ -225,18 +213,15 @@ class SupplierController extends Controller
 
     public function destroy(Stock $stock)
     {
-        // Pastikan hanya Administrator
         if (!Auth::user()->hasRole('Administrator')) {
             return redirect()->route('stock')->with('error', 'Anda tidak memiliki izin untuk melakukan aksi ini.');
         }
 
-        // Cek apakah stok pernah digunakan. Jika ya, paksa nonaktifkan, jangan hapus.
         if ($stock->stockDeductions()->exists()) {
             return redirect()->route('stock.show', $stock->id)
                 ->with('error', 'Stok ini tidak bisa dihapus permanen karena memiliki riwayat penggunaan. Harap gunakan tombol "Non-aktifkan".');
         }
 
-        // Jika tidak pernah digunakan, baru boleh hapus permanen
         try {
             $stock->delete();
             return redirect()->route('stock')->with('success', 'Stok barang berhasil dihapus secara permanen.');

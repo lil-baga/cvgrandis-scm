@@ -33,7 +33,6 @@
         @endif
 
         <div class="bg-white shadow-md rounded-lg p-6">
-            {{-- ... (Header Detail Pesanan dan Detail Informasi Pesanan tetap sama) ... --}}
             <div class="flex justify-between items-center mb-6 pb-4 border-b">
                 <h2 class="text-2xl font-semibold text-gray-800">Detail Pesanan - {{ $order->name }}</h2>
                 <a href="{{ route('order.list') }}" class="text-blue-600 hover:text-blue-800 hover:underline">
@@ -42,7 +41,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                {{-- Detail Pelanggan --}}
                 <div>
                     <h4 class="font-semibold text-gray-700">Nama Pelanggan:</h4>
                     <p class="text-gray-600">{{ $order->name }}</p>
@@ -94,7 +92,6 @@
                     <p class="text-sm text-gray-500">Belum ada data pengurangan stok yang tercatat untuk pesanan ini.</p>
                 @endif
             </div>
-            {{-- Form untuk Update Status (tetap sama) --}}
             <div class="mt-6 pt-6 border-t">
                 <h3 class="text-lg font-semibold text-gray-700 mb-3">Ubah Status Pesanan</h3>
                 <form action="{{ route('order.update', $order->id) }}" method="POST">
@@ -121,7 +118,6 @@
             </div>
 
 
-            {{-- BAGIAN BARU: Penyesuaian Stok untuk Proyek --}}
             <div class="mt-8 pt-6 border-t">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-700">Pengurangan Stok untuk Proyek Ini</h3>
@@ -134,7 +130,6 @@
                 <form action="{{ route('order.adjust', $order->id) }}" method="POST">
                     @csrf
                     <div id="selectedStockForAdjustmentList" class="space-y-3 mb-4">
-                        {{-- Item stok yang dipilih akan ditambahkan di sini oleh JavaScript --}}
                         <p class="text-sm text-gray-500 if-empty-list">Belum ada barang stok yang dipilih untuk dikurangi.
                         </p>
                     </div>
@@ -150,14 +145,12 @@
                     <h4 class="font-semibold text-gray-700 mb-2">File Lampiran: {{ $fileAttachmentDetails->name }}</h4>
                     @php
                         $fileType = $fileAttachmentDetails->type;
-                        $fileUrl = $fileAttachmentDetails->url; // Ini adalah URL ke route serveAttachment
+                        $fileUrl = $fileAttachmentDetails->url;
                         $originalFileName = $fileAttachmentDetails->name;
                         $extension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
                     @endphp
 
-                    {{-- Logika untuk menampilkan preview --}}
                     @if (Str::startsWith($fileType, 'image/'))
-                        {{-- src sekarang memanggil route, dan controller akan merespons dengan gambar --}}
                         <img src="{{ asset($order->path) }}" alt="Preview Lampiran: {{ $originalFileName }}"
                             class="max-w-full h-auto rounded-lg border max-h-96 mb-2">
                         <a href="{{ asset($order->path) }}" download="{{ $originalFileName }}"
@@ -166,15 +159,14 @@
                     @elseif ($fileType === 'application/pdf' || $extension === 'pdf')
                         <div class="mb-2">
                             <p class="text-sm text-gray-600 mb-1">Preview PDF:</p>
-                            {{-- iframe juga menggunakan route yang sama --}}
                             <iframe src="{{ asset($order->path) }}" class="w-full h-full border rounded-lg" frameborder="0"
                                 title="PDF Preview {{ $originalFileName }}"></iframe>
                         </div>
                     @else
                         <p class="text-sm text-gray-600 mb-2">Preview tidak tersedia untuk tipe file ini.</p>
                         <a href="{{ asset($order->path) }}" download="{{ $originalFileName }}"
-                        class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        Unduh File</a>
+                            class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Unduh File</a>
                     @endif
 
                 </div>

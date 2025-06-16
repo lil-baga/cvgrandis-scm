@@ -5,8 +5,6 @@
     <div class="bg-gray-100 font-sans min-h-screen w-full">
         <div class="max-w-2xl mx-auto py-10 px-4">
             <h1 class="text-2xl font-bold text-center mb-6">Form Pemesanan Proyek</h1>
-
-            {{-- Tampilkan error validasi jika ada --}}
             @if ($errors->any())
                 <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                     <strong class="font-bold">Terjadi Kesalahan:</strong>
@@ -55,20 +53,19 @@
                     <select id="service" name="service" class="shadow border rounded w-full py-2 px-3 text-gray-700"
                         required>
                         <option value="" disabled {{ old('service') ? '' : 'selected' }}>-- Pilih Layanan --</option>
-                        {{-- Pastikan value ini cocok dengan 'service_code' di tabel resep Anda --}}
                         <option value="neon" {{ old('service') == 'neon' ? 'selected' : '' }}>Neon Box</option>
                         <option value="backdrop" {{ old('service') == 'backdrop' ? 'selected' : '' }}>Backdrop Acara
                         </option>
                         <option value="interior" {{ old('service') == 'interior' ? 'selected' : '' }}>Design Interior
                         </option>
                         <option value="lettering" {{ old('service') == 'lettering' ? 'selected' : '' }}>Letter Akrilik &
-                            Stainless</option>
+                            Stainless
+                        </option>
                         <option value="event" {{ old('service') == 'event' ? 'selected' : '' }}>Event Organizer & RnD
                         </option>
                     </select>
                 </div>
 
-                {{-- Kontainer untuk input tambahan yang muncul secara kondisional --}}
                 <div id="extra_service" class="mb-4 {{ old('service') ? '' : 'hidden' }} space-y-4">
 
                     {{-- Input untuk Ukuran (Lebar & Tinggi) --}}
@@ -89,7 +86,7 @@
                             class="w-full border rounded-lg px-4 py-3 shadow-sm" value="{{ old('quantity') }}" />
                     </div>
 
-                    {{-- Input Deskripsi dan File (selalu muncul jika layanan dipilih) --}}
+                    {{-- Input Deskripsi dan File --}}
                     <div>
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
                             Deskripsi Proyek (Warna, Bahan, Detail lain)
@@ -124,10 +121,7 @@
                     </div>
 
                 </div>
-
-                {{-- Input tersembunyi untuk status awal --}}
                 <input name="status" type="hidden" value="in_queue" />
-
                 <div class="flex items-center justify-center mt-6">
                     <button
                         class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline"
@@ -163,25 +157,21 @@
                 if (selectedService) {
                     extraServiceDiv.classList.remove('hidden');
 
-                    if (selectedService === 'neon' || selectedService === 'backdrop' || selectedService === 'lettering') {
+                    if (selectedService === 'neon' || selectedService === 'backdrop' || selectedService ===
+                        'lettering') {
                         sizeInputsDiv.classList.remove('hidden');
                         quantityInputDiv.classList.remove('hidden');
                         widthInput.required = true;
                         heightInput.required = true;
                         quantityInput.required = true;
                     }
-                    // Untuk 'interior' dan 'event', tidak ada input numerik yang wajib,
-                    // hanya deskripsi dan file yang muncul.
                 }
             }
 
-            // Jalankan saat halaman dimuat untuk menangani old input jika ada error validasi
             toggleInputs();
 
-            // Jalankan saat pilihan layanan diubah
             serviceSelect.addEventListener('change', toggleInputs);
 
-            // JavaScript untuk menampilkan nama file pada dropzone
             const fileInput = document.getElementById('image_ref_input');
             const fileNameDisplay = document.getElementById('fileNameDisplay');
             if (fileInput && fileNameDisplay) {

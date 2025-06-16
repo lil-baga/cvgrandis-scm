@@ -160,61 +160,48 @@
 
     @include('base.footer')
 
-<script>
-    // Definisikan variabel untuk menyimpan instance modal di scope global
-    let confirmationModalInstance = null;
+    <script>
+        let confirmationModalInstance = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inisialisasi modal sekali saat halaman dimuat
-        const modalEl = document.getElementById('confirmationModal');
-        if (modalEl) {
-            confirmationModalInstance = new Modal(modalEl, {
-                // Opsi tambahan jika perlu, misal:
-                // closable: true, // Pastikan bisa ditutup
-            });
-        } else {
-            console.error('Elemen modal dengan ID "confirmationModal" tidak ditemukan.');
-        }
-    });
-
-    /**
-     * Menyiapkan dan menampilkan modal konfirmasi yang sudah diinisialisasi.
-     * @param {string} formAction - URL tujuan form.
-     * @param {string} httpMethod - Method HTTP yang digunakan ('POST', 'PUT', 'DELETE').
-     * @param {string} message - Pesan konfirmasi yang akan ditampilkan.
-     * @param {string} buttonClass - Kelas CSS untuk tombol konfirmasi (misal: bg-red-600 hover:bg-red-800).
-     * @param {string} buttonText - Teks untuk tombol konfirmasi (misal: 'Ya, Hapus').
-     */
-    function showConfirmationModal(formAction, httpMethod = 'POST', message = 'Apakah Anda yakin?', buttonClass = 'bg-red-600 hover:bg-red-800', buttonText = 'Ya, Saya Yakin') {
-        const modalForm = document.getElementById('confirmationModalForm');
-        const modalMessage = document.getElementById('confirmationModalMessage');
-        const confirmButton = document.getElementById('confirmationModalConfirmButton');
-        const methodInput = document.getElementById('confirmationModalMethod');
-        
-        if (modalForm && modalMessage && confirmButton && methodInput && confirmationModalInstance) {
-            modalForm.action = formAction;
-            
-            // Atur method spoofing untuk PUT atau DELETE
-            if (httpMethod.toUpperCase() === 'PUT' || httpMethod.toUpperCase() === 'PATCH' || httpMethod.toUpperCase() === 'DELETE') {
-                methodInput.value = httpMethod.toUpperCase();
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalEl = document.getElementById('confirmationModal');
+            if (modalEl) {
+                confirmationModalInstance = new Modal(modalEl, {});
             } else {
-                methodInput.value = 'POST'; // Default untuk POST atau jika method tidak dikenali
+                console.error('Elemen modal dengan ID "confirmationModal" tidak ditemukan.');
             }
+        });
 
-            modalMessage.innerHTML = message;
-            
-            // Atur style tombol konfirmasi
-            // Menggunakan setAttribute untuk mengganti seluruh kelas agar tidak menumpuk
-            confirmButton.setAttribute('class', `text-white ${buttonClass} focus:ring-4 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center`);
-            confirmButton.textContent = buttonText;
+        function showConfirmationModal(formAction, httpMethod = 'POST', message = 'Apakah Anda yakin?', buttonClass =
+            'bg-red-600 hover:bg-red-800', buttonText = 'Ya, Saya Yakin') {
+            const modalForm = document.getElementById('confirmationModalForm');
+            const modalMessage = document.getElementById('confirmationModalMessage');
+            const confirmButton = document.getElementById('confirmationModalConfirmButton');
+            const methodInput = document.getElementById('confirmationModalMethod');
 
-            // Gunakan instance modal yang sudah ada untuk menampilkannya
-            confirmationModalInstance.show();
-        } else {
-            console.error('Gagal menampilkan modal konfirmasi. Pastikan semua elemen modal ada dan Flowbite terinisialisasi.');
+            if (modalForm && modalMessage && confirmButton && methodInput && confirmationModalInstance) {
+                modalForm.action = formAction;
+
+                if (httpMethod.toUpperCase() === 'PUT' || httpMethod.toUpperCase() === 'PATCH' || httpMethod
+                .toUpperCase() === 'DELETE') {
+                    methodInput.value = httpMethod.toUpperCase();
+                } else {
+                    methodInput.value = 'POST';
+                }
+
+                modalMessage.innerHTML = message;
+                confirmButton.setAttribute('class',
+                    `text-white ${buttonClass} focus:ring-4 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center`
+                    );
+                confirmButton.textContent = buttonText;
+
+                confirmationModalInstance.show();
+            } else {
+                console.error(
+                    'Gagal menampilkan modal konfirmasi. Pastikan semua elemen modal ada dan Flowbite terinisialisasi.');
+            }
         }
-    }
-</script>
+    </script>
     @stack('script')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>

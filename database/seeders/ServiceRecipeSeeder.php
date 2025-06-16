@@ -14,14 +14,12 @@ class ServiceRecipeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Kosongkan tabel resep terlebih dahulu untuk memastikan data bersih setiap kali seeder dijalankan
         DB::table('service_recipes')->truncate();
         
         $stockIds = Stock::pluck('id', 'name')->toArray();
 
         $this->command->info("Membuat resep berdasarkan stok yang tersedia...");
 
-        // Definisi resep yang lebih detail
         $recipes = [
             // --- Resep untuk 'neon' ---
             // Bahan utama per meter persegi

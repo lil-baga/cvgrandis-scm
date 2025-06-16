@@ -146,13 +146,11 @@
                         <span class="sr-only">Close modal</span>
                     </button>
                 </div>
-                <form id="editStockItemFormDetail" method="POST" class="p-4 md:p-5"> {{-- Action di-set oleh JS --}}
+                <form id="editStockItemFormDetail" method="POST" class="p-4 md:p-5">
                     @csrf
                     @method('PUT')
-                    <input type="hidden" name="form_type" value="edit_stock"> {{-- Untuk re-open modal on error --}}
-
+                    <input type="hidden" name="form_type" value="edit_stock">
                     <div class="grid gap-4 mb-4 grid-cols-1">
-                        {{-- Field Nama Barang (dikontrol oleh JS) --}}
                         <div id="editFieldNameContainer">
                             <label for="editDetailName" class="block mb-2 text-sm font-medium text-gray-900">Nama
                                 Barang</label>
@@ -160,7 +158,6 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 required>
                         </div>
-                        {{-- Field Tipe Barang (dikontrol oleh JS) --}}
                         <div id="editFieldTypeContainer">
                             <label for="editDetailType" class="block mb-2 text-sm font-medium text-gray-900">Tipe
                                 Barang</label>
@@ -181,7 +178,6 @@
                                 required min="0">
                             <p id="currentStockInfo" class="mt-1 text-xs text-gray-500"></p>
                         </div>
-                        {{-- Field Batas Stok Rendah (dikontrol oleh JS) --}}
                         <div id="editFieldLowStockContainer">
                             <label for="editDetailLowStock" class="block mb-2 text-sm font-medium text-gray-900">Batas
                                 Stok
@@ -200,10 +196,8 @@
         </div>
     </div>
 
-    {{-- Modal Konfirmasi Delete (struktur modal tetap sama) --}}
     <div id="deleteStockItemModal" tabindex="-1"
         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
-        {{-- ... Isi modal delete tetap sama ... --}}
         <div class="relative p-4 w-full max-w-md max-h-full">
             <div class="relative bg-white rounded-lg shadow">
                 <button type="button"
@@ -223,7 +217,7 @@
                     </svg>
                     <h3 class="mb-5 text-lg font-normal text-gray-500">Anda yakin ingin menghapus barang <strong
                             id="deleteStockItemNamePreview"></strong>?</h3>
-                    <form id="deleteStockItemFormDetail" method="POST"> {{-- Action di-set oleh JS --}}
+                    <form id="deleteStockItemFormDetail" method="POST">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
@@ -242,35 +236,31 @@
         <script>
             const IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('Administrator') ? 'true' : 'false' }};
             const IS_SUPPLIER = {{ Auth::check() && Auth::user()->hasRole('Supplier') ? 'true' : 'false' }};
-            // Variabel global untuk menyimpan stok saat ini ketika modal supplier dibuka
             let currentStockForSupplierModal = 0;
 
             window.populateEditStockModal = function(id, name, type, currentStockQty, low_stock) {
                 const form = document.getElementById('editStockItemFormDetail');
-                let updateUrl = "{{ route('stock.update', ['stock' => ':id']) }}"; // Pastikan nama route ini benar
+                let updateUrl = "{{ route('stock.update', ['stock' => ':id']) }}";
                 form.action = updateUrl.replace(':id', id);
 
                 const nameInput = document.getElementById('editDetailName');
                 const typeSelect = document.getElementById('editDetailType');
-                const stockInput = document.getElementById(
-                    'editDetailStock'); // Ini akan jadi 'jumlah ditambah' atau 'stok baru'
-                const stockLabel = document.querySelector('label[for="editDetailStock"]'); // Ambil labelnya
+                const stockInput = document.getElementById('editDetailStock');
+                const stockLabel = document.querySelector('label[for="editDetailStock"]');
                 const lowStockInput = document.getElementById('editDetailLowStock');
-                const currentStockInfo = document.getElementById('currentStockInfo'); // Elemen untuk info stok
+                const currentStockInfo = document.getElementById('currentStockInfo');
                 const modalTitle = document.getElementById('editModalTitle');
                 const submitButton = document.getElementById('editModalSubmitButton');
 
-                // Kontainer field
                 const nameContainer = document.getElementById('editFieldNameContainer');
                 const typeContainer = document.getElementById('editFieldTypeContainer');
                 const lowStockContainer = document.getElementById('editFieldLowStockContainer');
 
-                // Reset ke default admin dulu
                 nameInput.readOnly = false;
                 typeSelect.disabled = false;
                 lowStockInput.readOnly = false;
                 stockInput.readOnly = false;
-                stockInput.min = "0"; // Default untuk admin
+                stockInput.min = "0";
 
                 nameInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
                 typeSelect.classList.remove('bg-gray-200', 'cursor-not-allowed');
@@ -280,7 +270,6 @@
                 if (typeContainer) typeContainer.style.display = 'block';
                 if (lowStockContainer) lowStockContainer.style.display = 'block';
 
-                // Set nilai awal untuk Admin
                 nameInput.value = name;
                 typeSelect.value = type;
                 stockInput.value = currentStockQty;
@@ -304,24 +293,21 @@
                     typeSelect.classList.add('bg-gray-200', 'cursor-not-allowed');
                     lowStockInput.classList.add('bg-gray-200', 'cursor-not-allowed');
 
-                    // Sembunyikan field yang tidak relevan untuk supplier
                     if (nameContainer) nameContainer.style.display = 'none';
                     if (typeContainer) typeContainer.style.display = 'none';
                     if (lowStockContainer) lowStockContainer.style.display = 'none';
 
-                    // Untuk Supplier, field 'stock' sekarang berarti 'jumlah yang ditambahkan'
                     if (stockLabel) stockLabel.textContent = 'Jumlah Stok yang Ditambahkan';
-                    stockInput.value = ""; // Kosongkan atau set ke 0 untuk input penambahan
+                    stockInput.value = "";
                     stockInput.placeholder = "0";
-                    stockInput.min = "0"; // Jumlah yang ditambahkan tidak boleh negatif
+                    stockInput.min = "0";
                     currentStockForSupplierModal =
-                        currentStockQty; // Simpan stok saat ini untuk validasi di controller jika perlu (atau controller ambil dari DB)
+                        currentStockQty;
                     if (currentStockInfo) {
                         currentStockInfo.textContent =
                             `Stok saat ini: ${currentStockQty}. Masukkan jumlah yang ingin ditambahkan.`;
                     }
                 } else {
-                    // Jika bukan admin atau supplier, mungkin disable semua
                     modalTitle.textContent = 'Lihat Stok Barang';
                     if (submitButton) submitButton.style.display = 'none';
                     nameInput.readOnly = true;
@@ -342,7 +328,7 @@
                 @if (session('open_edit_modal_on_error') && $errors->any() && isset($stock))
                     populateEditStockModal(
                         '{{ $stock->id }}',
-                        '{{ addslashes($stock->name) }}', // Gunakan data $stock asli untuk UI awal
+                        '{{ addslashes($stock->name) }}',
                         '{{ $stock->type }}',
                         {{ $stock->stock }},
                         {{ $stock->low_stock }}

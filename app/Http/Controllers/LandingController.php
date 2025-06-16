@@ -8,7 +8,6 @@ use App\Models\OrderStockDeduction;
 use App\Models\ServiceRecipe;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -41,7 +40,7 @@ class LandingController extends Controller
             'phone_number' => 'required|string|max:20',
             'service' => 'required|string|in:neon,backdrop,interior,letter,event',
             'description' => 'nullable|string',
-            'image_ref' => 'nullable|file|mimes:jpg,jpeg,png,pdf,zip|max:10240',
+            'image_ref' => 'required|file|mimes:jpg,jpeg,png,pdf,zip|max:10240',
             'width' => 'nullable|required_if:service,neon,backdrop,interior|numeric|min:0.01',
             'height' => 'nullable|required_if:service,neon,backdrop,interior|numeric|min:0.01',
             'quantity' => 'nullable|required_if:service,lettering,event|integer|min:1',
@@ -56,9 +55,6 @@ class LandingController extends Controller
         DB::beginTransaction();
 
         try {
-            $orderData = $request->only(['name', 'email', 'phone_number', 'service', 'description', 'status']);
-
-            // --- PERBAIKAN LOGIKA PENYIMPANAN FILE ---
             if ($request->hasFile('image_ref')) {
                 $file = $request->file('image_ref');
                 if (is_array($file)) {
@@ -66,23 +62,13 @@ class LandingController extends Controller
                 }
 
                 if ($file && $file->isValid()) {
-                    // Buat nama file yang unik
                     $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                     $extension = $file->getClientOriginalExtension();
-                    $fileNameToStore = Str::slug($originalName) . '_' . time() . '.' . $extension;
                     $fileName = $file->getClientOriginalName();
                     $categoryFolder = Str::slug($request->service);
                     $fileLocation = 'storage/order_attachments/' . $categoryFolder . '/';
                     $path = $fileLocation . $fileName;
-                    // dd($path);
                     $file->move(public_path($fileLocation), $fileName);
-                    // Simpan file ke disk 'public' di dalam folder 'order_attachments'
-                    // $path = $file->storeAs('order_attachments', $fileNameToStore, 'public');
-                    
-                    // // Alih-alih menyimpan data biner, kita simpan path-nya
-                    // $orderData['image_ref'] = $path; // Simpan path ke kolom 'image_ref'
-                    // $orderData['original_filename'] = $file->getClientOriginalName();
-                    // $orderData['mime_type'] = $file->getClientMimeType();
                 }
                 $order = Order::create([
                     'name' => $request->name,
@@ -94,16 +80,12 @@ class LandingController extends Controller
                     'width' => $request->width,
                     'height' => $request->height,
                     'quantity' => $request->quantity,
-                    'original_filename' => $originalName,
+                    'original_filename' => $originalName . '.' . $extension,
                     'mime_type' => $file->getClientMimeType(),
                     'path' => $path,
                 ]);
             }
-            // Jika tidak ada file, 'image_ref' tidak akan ada di $orderData dan akan menjadi null di DB
 
-            // Buat record order menggunakan mass assignment
-
-            // Logika deduksi stok otomatis (kode ini sudah benar dari sebelumnya)
             $recipes = ServiceRecipe::where('service_code', $order->service)->get();
 
             if ($recipes->isEmpty()) {

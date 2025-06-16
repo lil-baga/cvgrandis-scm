@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->foreignId('stock_id')->constrained('stocks')->onDelete('restrict');
-            $table->integer('quantity_deducted'); // Jumlah stok yang dikurangi untuk pesanan ini
+            $table->integer('quantity_deducted');
             $table->timestamps();
         });
     }

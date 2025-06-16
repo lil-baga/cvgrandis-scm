@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stocks', function (Blueprint $table) {
-            // Tambahkan kolom boolean 'is_active' dengan nilai default true
-            // after('status') menempatkannya setelah kolom status agar rapi
             $table->boolean('is_active')->default(true)->after('status');
         });
     }
@@ -24,7 +22,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stocks', function (Blueprint $table) {
-            // Hapus kolom jika migrasi di-rollback
             $table->dropColumn('is_active');
         });
     }

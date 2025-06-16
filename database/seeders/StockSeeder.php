@@ -46,7 +46,7 @@ class StockSeeder extends Seeder
             ['name' => 'Amplas Kayu Lembar Grit #120 (Pack 50lbr)', 'type' => 'tools', 'stock' => 0, 'low_stock' => 1],
             ['name' => 'Isi Lem Tembak Besar (Pack 1kg)', 'type' => 'tools', 'stock' => 1, 'low_stock' => 2],
             ['name' => 'Sekrup Gipsum 1 inch (Box)', 'type' => 'tools', 'stock' => 200, 'low_stock' => 5],
-            ['name' => 'Double Tape Foam Hijau (Roll)', 'type' => 'tools', 'stock' => 100, 'low_stock' => 3],
+            ['name' => 'Double Tape Foam Hijau (Roll)', 'type' => 'tools', 'stock' => 2, 'low_stock' => 3],
         ];
 
         foreach ($stocksData as $data) {

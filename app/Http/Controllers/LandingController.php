@@ -72,7 +72,7 @@ class LandingController extends Controller
                     $fileNameToStore = Str::slug($originalName) . '_' . time() . '.' . $extension;
                     $fileName = $file->getClientOriginalName();
                     $categoryFolder = Str::slug($request->service);
-                    $fileLocation = 'order_attachments/' . $categoryFolder . '/';
+                    $fileLocation = 'storage/order_attachments/' . $categoryFolder . '/';
                     $path = $fileLocation . $fileName;
                     // dd($path);
                     $file->move(public_path($fileLocation), $fileName);

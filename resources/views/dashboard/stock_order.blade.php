@@ -1,5 +1,5 @@
 @extends('layout.master')
-@section('title', 'Pesanan Stok Masuk')
+@section('title', 'Stock Order List')
 @section('content')
 <div class="pt-20 p-4 sm:ml-0">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

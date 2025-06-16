@@ -1,6 +1,6 @@
 @extends('layout.master')
 
-@section('title', 'Grandis.id - Form Pemesanan')
+@section('title', 'Form Pemesanan')
 @section('content')
     <div class="bg-gray-100 font-sans min-h-screen w-full">
         <div class="max-w-2xl mx-auto py-10 px-4">

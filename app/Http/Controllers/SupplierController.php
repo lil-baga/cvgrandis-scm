@@ -45,7 +45,7 @@ class SupplierController extends Controller
             // Hitung statistik berdasarkan query dasar
             $totalPendingOrders = $pendingOrdersQuery->count();
             $totalUniqueItemsRequested = $pendingOrdersQuery->distinct('stock_id')->count('stock_id');
-            $totalQuantityRequested = $pendingOrdersQuery->sum('quantity_requested');
+            $totalQuantityRequested = $pendingOrdersQuery->distinct('quantity_requested')->sum('quantity_requested');
 
             // Ambil data untuk tabel dengan paginasi
             $pendingStockOrders = $pendingOrdersQuery->with(['stock', 'requester'])
